@@ -193,15 +193,81 @@ const page2Posts = [
   },
 ];
 
-// Page 3: samples until you send the real posts
-const page3Posts = Array.from({ length: 10 }, (_, i) => ({
-  slug: `sample-post-${i + 21}`,
-  title: `Sample Post ${i + 21}: Replace With Your Real Title`,
-  categories: [categories[i % 3]],
-  excerpt: "This is a sample excerpt. Replace it with the real post summary…",
-  date: null,
-  image: null,
-}));
+// Page 3
+const page3Posts = [
+  {
+    slug: "aiza-ice-seguerra-celebrates-valentine-chinese-new-year-in-pampanga",
+    title: "Aiza “ice” Seguerra Celebrates Valentine, Chinese New Year in Pampanga",
+    categories: ["Uncategorized"],
+    excerpt: "ICE SEGUERRA PROMISES ‘200%’ PERFORMANCE IN FEB. 16 CONCERT, “As always naman, we give more than our…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "joey-g-and-nina-concert",
+    title: "Joey G and Nina Concert",
+    categories: ["News"],
+    excerpt: "Joey G and Nina Concert Perfect combination of rain, soulful songs Nothing could hold back the fans…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "its-quizmas-time-on-rw-95-1fm",
+    title: "It’s Quizmas Time on Rw 95.1fm",
+    categories: ["Events"],
+    excerpt: "December 18-22, 2017",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "anibersaya-sa-barangay",
+    title: "Anibersaya Sa Barangay",
+    categories: ["Uncategorized"],
+    excerpt: "22 years na tayo!",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "martin-nievera-live-in-pampanga",
+    title: "Martin Nievera Live in Pampanga!",
+    categories: ["Events"],
+    excerpt: "LIVE! Catch the Concert King Martin Nievera in a one night only unforgettable performance! Reserve your tickets…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "rw-95-1-bags-another-golden-dove",
+    title: "Rw 95.1 Bags Another Golden Dove",
+    categories: ["News"],
+    excerpt: "CITY OF SAN FERNANDO–Pampanga-based RW 95.1 FM has been adjudged as best provincial FM radio station all…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "rw-95-1-fm-keni-naka-wraps-up-2016-by-coming-to-towns",
+    title: "Rw 95.1 Fm (Keni Naka!) Wraps Up 2016 by Coming to Towns!",
+    categories: ["Events"],
+    excerpt: "RW 95.1 FM, a proud member of the Laus Group of Companies Tri-Media and the Kapisanan ng…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "rw-95-1-fm-20-years-on-the-airwaves-sticker-ko-idikit-mo-back-on-the-road",
+    title: "Rw 95.1 Fm, 20 Years on the Airwaves ‘sticker Ko, Idikit Mo’ Back on the Road",
+    categories: ["News"],
+    excerpt: "CITY OF SAN FERNANDO— Central Luzon’s two-time best FM radio station adds another feather on its cap…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "rw-95-1-fm-joins-broadcastreeing-for-a-greener-earth",
+    title: "Rw 95.1 Fm Joins Broadcastreeing for a Greener Earth",
+    categories: ["Events"],
+    excerpt: "At exactly 7 o’clock in the morning, media practitioners, along with private sector representatives, business owners, various…",
+    date: null,
+    image: null,
+  },
+];
 
 export const posts = [...page1Posts, ...page2Posts, ...page3Posts];
 
