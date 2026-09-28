@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const links = [
   { label: "Home", to: "/" },
@@ -13,6 +13,34 @@ const links = [
 
 export default function Header({ onListenLive }) {
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Close the search panel on outside click or Escape
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onClick = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
+    };
+    const onKey = (e) => e.key === "Escape" && setSearchOpen(false);
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen]);
+
+  const submitSearch = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate(`/search?s=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+    setOpen(false);
+  };
 
   return (
     <header className="mx-auto w-full max-w-[1244px]">
@@ -32,15 +60,15 @@ export default function Header({ onListenLive }) {
             {links.map((l) => (
               <li key={l.to}>
                 <NavLink
-                to={l.to}
-                className={({ isActive }) =>
+                  to={l.to}
+                  className={({ isActive }) =>
                     `relative text-[15px] font-bold text-white
                     after:absolute after:-bottom-1 after:left-0 after:h-[3px] after:bg-red-600
                     after:transition-all after:duration-200
                     hover:after:w-1/2 ${isActive && l.to !== "/" ? "after:w-1/2" : "after:w-0"}`
-                }
+                  }
                 >
-                {l.label}
+                  {l.label}
                 </NavLink>
               </li>
             ))}
@@ -57,12 +85,43 @@ export default function Header({ onListenLive }) {
 
           {/* Search + Listen Live */}
           <div className="flex h-full items-center">
-            <button className="px-5 text-white" aria-label="Search">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <circle cx="11" cy="11" r="7" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
+            <div ref={searchRef} className="relative h-full">
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="h-full px-5 text-white"
+                aria-label="Search"
+                aria-expanded={searchOpen}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <circle cx="11" cy="11" r="7" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </button>
+
+              {searchOpen && (
+                <form
+                  onSubmit={submitSearch}
+                  role="search"
+                  className="absolute right-0 top-full z-30 flex w-[325px] max-w-[90vw] gap-0 bg-[#1a1a1a] p-3.5 shadow-lg"
+                >
+                  <input
+                    type="search"
+                    autoFocus
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search ..."
+                    className="h-[38px] min-w-0 flex-1 bg-[#333] px-3 text-sm text-white outline-none placeholder:text-neutral-400"
+                  />
+                  <button
+                    type="submit"
+                    className="h-[38px] bg-[#e60000] px-4 text-sm font-bold uppercase text-white hover:bg-red-700"
+                  >
+                    Search
+                  </button>
+                </form>
+              )}
+            </div>
+
             <button
               onClick={onListenLive}
               className="flex h-full items-center text-[15px] font-bold text-white"
