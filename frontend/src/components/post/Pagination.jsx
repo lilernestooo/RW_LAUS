@@ -6,6 +6,12 @@ export default function Pagination({ page, totalPages, onChange }) {
 
   return (
     <nav aria-label="Pagination" className="mt-10 flex justify-center gap-1">
+      {page > 1 && (
+        <button onClick={() => onChange(page - 1)} className={`${box} ${idle}`}>
+          Previous
+        </button>
+      )}
+
       {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
         <button
           key={n}
@@ -16,6 +22,7 @@ export default function Pagination({ page, totalPages, onChange }) {
           {n}
         </button>
       ))}
+
       {page < totalPages && (
         <button onClick={() => onChange(page + 1)} className={`${box} ${idle}`}>
           Next

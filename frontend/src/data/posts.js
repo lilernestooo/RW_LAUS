@@ -1,6 +1,32 @@
 export const categories = ["Events", "News", "Uncategorized"];
 
-const realPosts = [
+// Archives dropdown (same on every page)
+export const archives = [
+  "September 2026",
+  "August 2025",
+  "September 2024",
+  "September 2023",
+  "December 2022",
+  "August 2022",
+  "July 2022",
+  "August 2021",
+  "February 2020",
+  "February 2019",
+  "October 2018",
+  "August 2018",
+  "April 2018",
+  "March 2018",
+  "February 2018",
+  "January 2018",
+  "December 2017",
+  "April 2017",
+  "December 2016",
+  "July 2015",
+  "June 2015",
+];
+
+// Page 1
+const page1Posts = [
   {
     slug: "31-years-of-rw-95-1-fm-what-comes-next",
     title: "31 Years of RW 95.1 FM: What Comes Next?",
@@ -83,17 +109,101 @@ const realPosts = [
   },
 ];
 
-// Sample posts so pages 2 and 3 have 10 posts each. Replace with real posts later.
-const samplePosts = Array.from({ length: 20 }, (_, i) => ({
-  slug: `sample-post-${i + 11}`,
-  title: `Sample Post ${i + 11}: Replace With Your Real Title`,
+// Page 2
+const page2Posts = [
+  {
+    slug: "rw95-1-fm-sallies-forth-with-original-mission-service-in-the-midst-of-tragedy",
+    title: "RW95.1 FM Sallies Forth With Original Mission Service In The Midst Of Tragedy",
+    categories: ["News"],
+    excerpt: "By: Aubrey “DJ Alex” F. Sembrano Today, we remember a great man, a visionary and…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "got-2-believe-joey-ice",
+    title: "Got 2 Believe: Joey & Ice",
+    categories: ["Events"],
+    excerpt: "By: Aubrey “DJ Alex” F. Sembrano What happens when a man with a wide vocal range…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "oa-na-tour-spectacular-is-not-an-exaggeration",
+    title: "Oa Na Tour: Spectacular is Not an Exaggeration",
+    categories: ["Events", "News"],
+    excerpt: "By: Aubrey “DJ Alex” F. Sembrano We did it again! The recently held “OA Na Tour…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "one-golden-chance-to-experience-bee-gees-in-pampanga",
+    title: "One Golden Chance to Experience Bee Gees in Pampanga",
+    categories: ["Events", "News"],
+    excerpt: "If you have never seen the Bee Gees perform live back in their prime, there’s no way…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "rws-anibersaya-sa-barangay-lovelier-and-more-fun-the-second-time-around",
+    title: "Rw’s ‘anibersaya Sa Barangay’ Lovelier and More Fun the Second Time Around",
+    categories: ["Events"],
+    excerpt: "TURNING 23 has never been this overwhelmingly amazing! From the sponsors, prizes and to the…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "lets-celebrate-fun-and-laughter-on-rws-23rd",
+    title: "Let’s Celebrate Fun and Laughter on Rw’s 23rd!",
+    categories: ["Events"],
+    excerpt: "You know it was a fruitful year when you just had an Ice Seguerra concert in February;…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "lani-misalucha-waking-up-to-a-dream-concert",
+    title: "Lani Misalucha: Waking Up to a Dream Concert",
+    categories: ["Events"],
+    excerpt: "Lani Misalucha: Waking up to a dream concert by: Aubrey “DJ Alex” Sembrano “Iba pa rin ang…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "lani-misalucha-holds-a-las-vegas-kind-of-show-in-pampanga",
+    title: "Lani Misalucha Holds a Las Vegas Kind of Show in Pampanga",
+    categories: ["Events"],
+    excerpt: "LANI MISALUCHA HOLDS A LAS VEGAS KIND OF SHOW IN PAMPANGA By Aira Camille R. Olegario Countryside…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "nonoy-zuniga-promises-a-wonderful-evening-with-the-cabalens",
+    title: "Nonoy Zuñiga Promises a Wonderful Evening With the Cabalens",
+    categories: ["Events"],
+    excerpt: "“For sure, they will be expecting my hits. But I’ll also be performing other songs that I…",
+    date: null,
+    image: null,
+  },
+  {
+    slug: "ice-seguerra-concert-a-resounding-success",
+    title: "Ice Seguerra Concert a Resounding Success",
+    categories: ["Uncategorized"],
+    excerpt: "(Aubrey F. Sembrano) Ice Seguerra lied when he said that he’d give 200% performance. That was because…",
+    date: null,
+    image: null,
+  },
+];
+
+// Page 3: samples until you send the real posts
+const page3Posts = Array.from({ length: 10 }, (_, i) => ({
+  slug: `sample-post-${i + 21}`,
+  title: `Sample Post ${i + 21}: Replace With Your Real Title`,
   categories: [categories[i % 3]],
   excerpt: "This is a sample excerpt. Replace it with the real post summary…",
   date: null,
   image: null,
 }));
 
-export const posts = [...realPosts, ...samplePosts];
+export const posts = [...page1Posts, ...page2Posts, ...page3Posts];
 
 export function formatDate(iso) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -103,14 +213,3 @@ export function formatDate(iso) {
     timeZone: "UTC",
   });
 }
-
-// Unique "Month Year" labels from dated posts, for the Archives dropdown
-export const archives = [
-  ...new Set(
-    posts
-      .filter((p) => p.date)
-      .map((p) =>
-        new Date(p.date).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
-      )
-  ),
-];

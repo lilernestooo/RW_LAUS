@@ -3,6 +3,7 @@ import { posts, categories, archives } from "../../data/posts";
 import useStickySidebar from "../../hooks/useStickySidebar";
 import SectionTitle from "../ui/SectionTitle";
 import OnAirBanner from "./OnAirBanner";
+import ArchivesDropdown from "./ArchivesDropdown";
 
 const listItem = "border-b border-white/10 py-3 first:pt-0 last:border-0";
 
@@ -10,7 +11,7 @@ export default function Sidebar() {
   const ref = useStickySidebar();
 
   return (
-    <aside ref={ref} className="lg:sticky">
+    <aside ref={ref} className="lg:sticky lg:pb-64">
       <OnAirBanner />
 
       <SectionTitle className="mt-8">Recent Comments</SectionTitle>
@@ -39,17 +40,7 @@ export default function Sidebar() {
       </ul>
 
       <SectionTitle className="mt-8">Archives</SectionTitle>
-      <select
-        defaultValue=""
-        className="w-full border border-white/30 bg-[#111] px-3 py-3 font-medium text-white"
-      >
-        <option value="">Select Month</option>
-        {archives.map((a) => (
-          <option key={a} value={a}>
-            {a}
-          </option>
-        ))}
-      </select>
+      <ArchivesDropdown />
     </aside>
   );
 }
