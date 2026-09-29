@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/footer/Footer";
 import Landing from "./pages/Landing";
+import Post from "./pages/Post";
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <main className="mx-auto max-w-[1244px] bg-[#111] p-6">
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/:slug" element={<Post />} />
         </Routes>
       </main>
       <Footer />

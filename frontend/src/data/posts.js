@@ -27,14 +27,35 @@ export const archives = [
 
 // Page 1
 const page1Posts = [
-  {
-    slug: "31-years-of-rw-95-1-fm-what-comes-next",
-    title: "31 Years of RW 95.1 FM: What Comes Next?",
-    categories: ["Events", "News"],
-    excerpt: "31 Years of RW 95.1 FM: What Comes Next? By Jasmine Leigh Anne “DJ Lorie” S. Tizon…",
-    date: "2026-09-01",
-    image: null,
-  },
+{
+  slug: "31-years-of-rw-95-1-fm-what-comes-next",
+  title: "31 Years of RW 95.1 FM: What Comes Next?",
+  categories: ["Events", "News"],
+  excerpt: "31 Years of RW 95.1 FM: What Comes Next? By Jasmine Leigh Anne “DJ Lorie” S. Tizon…",
+  date: "2026-09-01",
+  image: null,
+  byline: "By Jasmine Leigh Anne “DJ Lorie” S. Tizon",
+  body: [
+    "In a constantly changing world, radio remains wonderfully human.",
+    "Technology changes. Habits change. The way we consume information and music continues to evolve. Yet there is something enduring about hearing a familiar voice at the right moment, discovering a song that brings back a memory, or knowing that somewhere, someone is keeping you company. This is the untold miracle of RW 95.1 FM: the way we quietly become part of people’s everyday lives.",
+    "Last year, the station reached its thirty-year milestone, marking a journey that began with the vision of our founder, Mr. Levy P. Laus, and grew into a pioneering force in local broadcasting. Along the way, we championed community causes and earned KBP Golden Dove awards for Best Provincial FM Station in the Philippines in 2007, 2011, 2016, and 2019. Now, as we continue our journey with CLTV36 under Radioworld Broadcasting Corporation (RBC), we continue to uphold a legacy that goes beyond the number of years we have been on air.",
+    "Anniversaries, indeed, give us the chance to count the years, but life counts something else: the sunny and rainy days, the songs that make time easier to jive with, the laughter and stories shared over the airwaves, and the moments that have become so familiar that we often forget how special they are.",
+    "Your lives are a part of ours, just as this station has become a part of yours. Milestones, by nature, deserve a loud celebration, but the true measure of our thirty-one years is much quieter: it is simply being there, day after day, for the people who welcome us into their homes and lives.",
+    "There will always be new platforms, new technologies, and new ways to reach an audience. We welcome them, but we also know that some things remain the same: people seeking companionship as they drive home or do their chores, communities looking for trustworthy information in times of uncertainty, and your favorite songs that remind you of every beautiful moment in life.",
+    "This is the beauty of radio. We don’t need to compete with every new invention. We only need to remain close enough to know our community, understand its stories, and continue to be a safe space for them.",
+    "It’s easy to focus on milestones and recognitions, but our greatest hope has always been to grow with a community. No station creates these moments alone, because they belong to the people who live them. This is why the thirty-first anniversary belongs not only to RW 95.1 FM, but also to every listener who made our rhythm a part of their song of life.",
+    "This moment of joy also belongs to our founder, whose vision reached beyond transmitters and towers; to every broadcaster whose voice has lightened somebody’s day; and to the sales, finance, and technical teams whose work happens far from the microphone but is heard in every broadcast.",
+    "Thank you for allowing us to be part of your mornings, afternoons, evenings, celebrations, your worries, your long drives, your quiet moments, and all the ordinary days in between.",
+    "People may remember great occasions, but keep this in mind: history itself is mostly made of ordinary days.",
+    "We are grateful that so many of those days have included us.",
+    "Allow us to borrow a few more of those ordinary days and turn them into moments of celebration as we bring back AniberSAYA sa Barangay!",
+    "Because after thirty-one years, the story doesn’t end with an anniversary. It continues—with another familiar voice, another song making its way through the airwaves. And perhaps that’s what we have always been about: keeping the beautiful moments alive, long after the grand celebrations are over.",
+    "So here’s to the memories we’ve shared, the stories still waiting to be told, and the many more ordinary days that we will have the privilege of spending with you.",
+    "After thirty-one years, perhaps the greatest promise we can make is a simple one: we’ll keep the lights on, the music playing, and our voices on the air—ready to be part of your next ordinary day.",
+    "Only here on RW 95.1 FM.",
+    "Nukarin ka pa? Keni Na Ka!",
+  ],
+},
   {
     slug: "anibersaya-sa-barangay-part-vii-bringing-joy-to-the-barangays-rain-or-shine",
     title: "AniberSAYA sa Barangay Part VII: Bringing Joy to the Barangays, Rain or Shine",
@@ -64,7 +85,7 @@ const page1Posts = [
     title: "Cheers to More Fruitful Years with RW 95.1 FM!",
     categories: ["Events", "News"],
     excerpt: "By Sophia “DJ Ellie” P. Velasquez In life, we often find ourselves faced with challenges…",
-    date: null,
+    date: "2023-09-28",
     image: null,
   },
   {
@@ -279,3 +300,4 @@ export function formatDate(iso) {
     timeZone: "UTC",
   });
 }
+
