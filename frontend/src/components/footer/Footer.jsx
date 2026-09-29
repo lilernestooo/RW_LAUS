@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { posts, formatDate } from "../../data/posts";
 import SectionTitle from "../ui/SectionTitle";
-import PostImage from "../Post/PostImage";
+import PostImage from "../post/PostImage";
 
 const socials = [
   {
