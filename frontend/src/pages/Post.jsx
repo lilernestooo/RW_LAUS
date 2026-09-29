@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { posts } from "../data/posts";
 import PostImage from "../components/post/PostImage";
+import PostGallery from "../components/post/PostGallery";
 import RelatedPostCard from "../components/post/RelatedPostCard";
 import CommentForm from "../components/post/CommentForm";
 import Sidebar from "../components/sidebar/Sidebar";
@@ -28,6 +29,7 @@ export default function Post() {
     .slice(0, 3);
 
   const body = post.body ?? [post.excerpt];
+  const bylineLines = post.bylineLines ?? (post.byline ? [post.byline] : []);
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
@@ -63,43 +65,65 @@ export default function Post() {
           {post.title}
         </h1>
 
-        {/* Featured image */}
-        <PostImage post={post} />
+        {/* Featured image + gallery */}
+        <PostImage post={post} ratio="aspect-[16/9]" />
+        <PostGallery count={post.galleryCount} columns={post.galleryColumns} />
 
         {/* Byline + body */}
         <div className="mt-8 space-y-5 text-base leading-relaxed text-neutral-200">
           <div>
-            <p className="font-semibold text-white">{post.title}</p>
-            {post.byline && <p className="font-semibold text-white">{post.byline}</p>}
+            {post.showTitleAboveByline && (
+              <p className="font-semibold text-white">{post.title}</p>
+            )}
+            {bylineLines.map((line, i) => (
+              <p
+                key={i}
+                className={`font-semibold text-white ${post.bylineItalic ? "italic" : ""}`}
+              >
+                {line}
+              </p>
+            ))}
           </div>
           {body.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}
         </div>
 
+        {/* About the Writer */}
+        {post.aboutWriter && (
+          <div className="mt-8 border-t border-white/10 pt-6">
+            <h2 className="mb-2 text-lg font-bold text-white">About the Writer</h2>
+            <p className="text-base leading-relaxed text-neutral-200">{post.aboutWriter}</p>
+          </div>
+        )}
+
         {/* Previous / Next */}
         {(previous || next) && (
-          <div className="mt-10 space-y-4 border-t border-white/10 pt-6">
-            {previous && (
-              <div>
-                <span className="block text-xs font-bold uppercase text-neutral-500">
-                  Previous
-                </span>
-                <Link to={`/${previous.slug}`} className="font-bold text-white hover:text-red-500">
-                  {previous.title}
-                </Link>
-              </div>
-            )}
-            {next && (
-              <div>
-                <span className="block text-xs font-bold uppercase text-neutral-500">
-                  Next
-                </span>
-                <Link to={`/${next.slug}`} className="font-bold text-white hover:text-red-500">
-                  {next.title}
-                </Link>
-              </div>
-            )}
+          <div className="mt-10 grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+            <div>
+              {previous && (
+                <>
+                  <span className="block text-xs font-bold uppercase text-neutral-500">
+                    Previous
+                  </span>
+                  <Link to={`/${previous.slug}`} className="font-bold text-white hover:text-red-500">
+                    {previous.title}
+                  </Link>
+                </>
+              )}
+            </div>
+            <div className="text-right">
+              {next && (
+                <>
+                  <span className="block text-xs font-bold uppercase text-neutral-500">
+                    Next
+                  </span>
+                  <Link to={`/${next.slug}`} className="font-bold text-white hover:text-red-500">
+                    {next.title}
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         )}
 
