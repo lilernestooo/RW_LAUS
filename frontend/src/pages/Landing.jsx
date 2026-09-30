@@ -1,25 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { posts } from "../data/posts";
 import PostCard from "../components/post/PostCard";
 import Pagination from "../components/post/Pagination";
 import Sidebar from "../components/sidebar/Sidebar";
 import Spinner from "../components/ui/Spinner";
+import { useState } from "react";
 
 const PAGE_SIZE = 10;
 
 export default function Landing() {
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const page = Math.min(Math.max(pageFromUrl, 1), totalPages);
+
   const [showTop, setShowTop] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
   const visible = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const goToPage = (n) => {
     setLoading(true);
     window.scrollTo({ top: 0 });
     setTimeout(() => {
-      setPage(n);
+      setSearchParams(n === 1 ? {} : { page: n });
       setLoading(false);
     }, 600);
   };
