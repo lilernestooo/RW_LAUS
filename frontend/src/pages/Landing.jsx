@@ -1,11 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { posts } from "../data/posts";
 import PostCard from "../components/post/PostCard";
 import Pagination from "../components/post/Pagination";
 import Sidebar from "../components/sidebar/Sidebar";
-import Spinner from "../components/ui/Spinner";
-import { useState } from "react";
 
 const PAGE_SIZE = 10;
 
@@ -17,17 +15,12 @@ export default function Landing() {
   const page = Math.min(Math.max(pageFromUrl, 1), totalPages);
 
   const [showTop, setShowTop] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const visible = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const goToPage = (n) => {
-    setLoading(true);
     window.scrollTo({ top: 0 });
-    setTimeout(() => {
-      setSearchParams(n === 1 ? {} : { page: n });
-      setLoading(false);
-    }, 600);
+    setSearchParams(n === 1 ? {} : { page: n });
   };
 
   useEffect(() => {
@@ -38,8 +31,6 @@ export default function Landing() {
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
-      {loading && <Spinner />}
-
       {/* Main content */}
       <section>
         <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2">
