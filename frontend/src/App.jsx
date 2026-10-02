@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/footer/Footer";
 import Home from "./pages/Home";
@@ -14,9 +14,11 @@ import Post from "./pages/Post";
 import PageLoader from "./components/ui/PageLoader";
 
 export default function App() {
+  const navigate = useNavigate();
+
   return (
     <>
-      <Header onListenLive={() => {}} />
+      <Header onListenLive={() => navigate("/stream")} />
       <main className="mx-auto max-w-[1244px] bg-[#111] p-6">
         <PageLoader>
           <Routes>

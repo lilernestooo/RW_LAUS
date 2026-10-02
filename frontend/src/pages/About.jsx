@@ -116,14 +116,11 @@ function PersonCard({ name, index }) {
     // Outer wrapper: entrance. Inner card: hover (kept separate so transforms don't fight)
     <Reveal from="zoom" delay={(index % 3) * 130}>
       <div className="group cursor-pointer">
-        <div className="relative overflow-hidden shadow-lg transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_18px_40px_-10px_rgba(230,0,0,0.55)]">
+        <div className="relative overflow-hidden transition-all duration-500 group-hover:-translate-y-2">
           {/* Placeholder - swap for <img src={...} className="..."/> when you have the photo */}
           <div className="flex aspect-square w-full items-center justify-center bg-neutral-900 text-xs text-neutral-500 transition-transform duration-700 group-hover:scale-110">
             Image placeholder
           </div>
-
-          {/* Red glow from the bottom */}
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(230,0,0,0.5),transparent_65%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           {/* Shine sweep */}
           <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-[900ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
@@ -177,12 +174,10 @@ export default function About() {
 
           {/* Golden Dove image placeholder */}
           <Reveal from="zoom" delay={100}>
-            <div className="group relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden border-2 border-dashed border-amber-700/60 bg-neutral-900 text-neutral-500 transition-all duration-500 hover:border-amber-500 hover:shadow-[0_0_40px_-5px_rgba(217,119,6,0.5)]">
+            <div className="group relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden border-2 border-dashed border-amber-700/60 bg-neutral-900 text-neutral-500">
               <span className="transition-transform duration-700 group-hover:scale-105">
                 Golden Dove image (Multi-Award Winning Best Provincial FM Station)
               </span>
-              {/* Gold shine sweep */}
-              <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-amber-300/20 to-transparent opacity-0 transition-all duration-[1200ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
             </div>
           </Reveal>
 
