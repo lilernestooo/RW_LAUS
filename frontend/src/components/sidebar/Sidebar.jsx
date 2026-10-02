@@ -11,7 +11,7 @@ export default function Sidebar() {
   const ref = useStickySidebar();
 
   return (
-    <aside ref={ref} className="lg:sticky lg:pb-64">
+    <aside ref={ref} className="relative z-10 lg:sticky">
       <OnAirBanner />
 
       <SectionTitle className="mt-8">Recent Comments</SectionTitle>

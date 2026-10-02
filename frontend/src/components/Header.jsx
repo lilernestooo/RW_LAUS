@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 const links = [
-  { label: "Home", to: "/" },
+  { label: "Home", to: "/homepage" },
   { label: "About Us", to: "/about" },
   { label: "Programs", to: "/programs" },
   { label: "News & Events", to: "/news" },
@@ -59,17 +59,17 @@ export default function Header({ onListenLive }) {
           <ul className="hidden items-center gap-8 lg:flex">
             {links.map((l) => (
               <li key={l.to}>
-                <NavLink
-                  to={l.to}
-                  className={({ isActive }) =>
-                    `relative text-[15px] font-bold text-white
-                    after:absolute after:-bottom-1 after:left-0 after:h-[3px] after:bg-red-600
-                    after:transition-all after:duration-200
-                    hover:after:w-1/2 ${isActive && l.to !== "/" ? "after:w-1/2" : "after:w-0"}`
-                  }
-                >
-                  {l.label}
-                </NavLink>
+                  <NavLink
+                    to={l.to}
+                      className={({ isActive }) =>
+                        `relative text-[15px] font-bold text-white
+                        after:absolute after:-bottom-1 after:left-0 after:h-[3px] after:bg-red-600
+                        after:transition-all after:duration-200
+                        hover:after:w-1/2 ${isActive ? "after:w-1/2" : "after:w-0"}`
+                      }
+                  >
+                    {l.label}
+                  </NavLink>
               </li>
             ))}
           </ul>
