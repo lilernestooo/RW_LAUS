@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
+import SectionTitle from "../components/ui/SectionTitle";
 
 const awards = [
   "The Paragala goes to… RW 95.1 FM – Best Local Radio Station",
@@ -76,20 +77,20 @@ export default function Home() {
             Hero image (RW 95.1 FM – Keni na Ka')
           </div>
 
-          <hr className="my-10 border-t-4 border-white" />
+          <hr className="my-10 border-t-1 border-white-600" />
 
           <div className="grid gap-10 md:grid-cols-2">
             <div>
-              <h2 className="mb-8 text-center text-3xl font-bold text-red-600">
-                AWARDS
-              </h2>
+
+                <SectionTitle>Awards</SectionTitle>
+
               <AwardsCarousel />
             </div>
 
             <div>
-              <h2 className="mb-8 text-center text-3xl font-bold text-red-600">
-                VIDEO
-              </h2>
+
+                <SectionTitle>Video</SectionTitle>
+
               {/* Add src when you have the video file */}
               <video controls className="aspect-video w-full bg-black" />
             </div>
