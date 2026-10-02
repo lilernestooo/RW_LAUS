@@ -5,6 +5,9 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Programs from "./pages/Programs";
 import News from "./pages/News";
+import Gallery from "./pages/Gallery";
+import Contact from "./pages/Contact";
+import Stream from "./pages/Stream";
 import Landing from "./pages/Landing";
 import Search from "./pages/Search";
 import Post from "./pages/Post";
@@ -22,6 +25,9 @@ export default function App() {
             <Route path="/about" element={<About />} />
             <Route path="/programs" element={<Programs />} />
             <Route path="/news" element={<News />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/stream" element={<Stream />} />
             <Route path="/search" element={<Search />} />
             <Route path="/:slug" element={<Post />} />
           </Routes>

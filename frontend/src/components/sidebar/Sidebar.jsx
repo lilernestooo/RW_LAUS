@@ -7,14 +7,14 @@ import ArchivesDropdown from "./ArchivesDropdown";
 
 const listItem = "border-b border-white/10 py-3 first:pt-0 last:border-0";
 
-export default function Sidebar() {
+export default function Sidebar({ showBanner = true }) {
   const ref = useStickySidebar();
 
   return (
     <aside ref={ref} className="relative z-10 lg:sticky">
-      <OnAirBanner />
+      {showBanner && <OnAirBanner />}
 
-      <SectionTitle className="mt-8">Recent Comments</SectionTitle>
+      <SectionTitle className={showBanner ? "mt-8" : ""}>Recent Comments</SectionTitle>
       <ul className="text-sm text-neutral-300">{/* empty for now */}</ul>
 
       <SectionTitle className="mt-8">Recent Posts</SectionTitle>

@@ -274,8 +274,8 @@ export default function News() {
           </div>
         </section>
 
-        {/* Sticky sidebar */}
-        <Sidebar />
+        {/* Sticky sidebar (banner is shown in the main column on this page) */}
+        <Sidebar showBanner={false} />
 
         {/* Back-to-top button */}
         {showTop && (

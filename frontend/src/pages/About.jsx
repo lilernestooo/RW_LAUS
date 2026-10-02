@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 
@@ -26,19 +26,125 @@ const entertainment = [
 const djs = ["DJ Tyra", "DJ Alex", "DJ Ellie", "DJ Kian", "DJ Gio", "DJ Don Marco"];
 const anchors = ["Perry Pangan", "Boy Santiago", "Albert Lacanlale"];
 
-function PersonGrid({ names }) {
+// Returns [ref, shown]: shown flips to true once the element scrolls into view
+function useReveal(threshold = 0.15) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [threshold]);
+
+  return [ref, shown];
+}
+
+const hidden = {
+  up: "translate-y-8 opacity-0",
+  left: "-translate-x-10 opacity-0",
+  right: "translate-x-10 opacity-0",
+  zoom: "scale-90 opacity-0",
+};
+
+// Fade/slide in when scrolled into view
+function Reveal({ as: Tag = "div", from = "up", delay = 0, className = "", children }) {
+  const [ref, shown] = useReveal();
   return (
-    <div className="grid grid-cols-3 gap-x-6 gap-y-6">
-      {names.map((name) => (
-        <div key={name}>
-          {/* Placeholder - swap for <img src={...} /> when you have the photo */}
-          <div className="flex aspect-square w-full items-center justify-center bg-neutral-900 text-xs text-neutral-500">
+    <Tag
+      ref={ref}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : hidden[from]
+      } ${className}`}
+      style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+// Section heading with a red underline that draws in
+function SectionHeading({ children, className = "" }) {
+  const [ref, shown] = useReveal();
+  return (
+    <div ref={ref} className="mb-10 text-center">
+      <h2
+        className={`inline-block text-3xl font-bold text-white transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+        } ${className}`}
+      >
+        {children}
+      </h2>
+      <span
+        className={`mx-auto mt-3 block h-1 bg-[#e60000] transition-all delay-300 duration-700 ease-out ${
+          shown ? "w-20" : "w-0"
+        }`}
+      />
+    </div>
+  );
+}
+
+// Horizontal rule that grows from the left
+function GrowRule({ className = "" }) {
+  const [ref, shown] = useReveal(0.5);
+  return (
+    <hr
+      ref={ref}
+      className={`origin-left border-t border-white/80 transition-transform duration-1000 ease-out ${
+        shown ? "scale-x-100" : "scale-x-0"
+      } ${className}`}
+    />
+  );
+}
+
+function PersonCard({ name, index }) {
+  return (
+    // Outer wrapper: entrance. Inner card: hover (kept separate so transforms don't fight)
+    <Reveal from="zoom" delay={(index % 3) * 130}>
+      <div className="group cursor-pointer">
+        <div className="relative overflow-hidden shadow-lg transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_18px_40px_-10px_rgba(230,0,0,0.55)]">
+          {/* Placeholder - swap for <img src={...} className="..."/> when you have the photo */}
+          <div className="flex aspect-square w-full items-center justify-center bg-neutral-900 text-xs text-neutral-500 transition-transform duration-700 group-hover:scale-110">
             Image placeholder
           </div>
-          <h3 className="my-5 text-center text-xl font-bold uppercase text-white">
-            {name}
-          </h3>
+
+          {/* Red glow from the bottom */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(230,0,0,0.5),transparent_65%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+          {/* Shine sweep */}
+          <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-[900ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
+
+          {/* Red bar along the bottom edge */}
+          <span className="absolute bottom-0 left-0 h-1 w-0 bg-[#e60000] transition-all duration-500 ease-out group-hover:w-full" />
         </div>
+
+        <h3 className="my-5 text-center text-xl font-bold uppercase text-white transition-all duration-300 group-hover:tracking-wider group-hover:text-red-500">
+          {name}
+        </h3>
+      </div>
+    </Reveal>
+  );
+}
+
+function PersonGrid({ names }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
+      {names.map((name, i) => (
+        <PersonCard key={name} name={name} index={i} />
       ))}
     </div>
   );
@@ -64,40 +170,56 @@ export default function About() {
 
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
         {/* Main content */}
-        <section>
-          <h1 className="mb-6 text-3xl font-bold text-white">About Us</h1>
+        <section className="overflow-x-clip">
+          <Reveal from="left">
+            <h1 className="mb-6 text-3xl font-bold text-white">About Us</h1>
+          </Reveal>
 
           {/* Golden Dove image placeholder */}
-          <div className="flex aspect-[16/10] w-full items-center justify-center border-2 border-dashed border-amber-700/60 bg-neutral-900 text-neutral-500">
-            Golden Dove image (Multi-Award Winning Best Provincial FM Station)
-          </div>
+          <Reveal from="zoom" delay={100}>
+            <div className="group relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden border-2 border-dashed border-amber-700/60 bg-neutral-900 text-neutral-500 transition-all duration-500 hover:border-amber-500 hover:shadow-[0_0_40px_-5px_rgba(217,119,6,0.5)]">
+              <span className="transition-transform duration-700 group-hover:scale-105">
+                Golden Dove image (Multi-Award Winning Best Provincial FM Station)
+              </span>
+              {/* Gold shine sweep */}
+              <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-amber-300/20 to-transparent opacity-0 transition-all duration-[1200ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
+            </div>
+          </Reveal>
 
           <div className="mt-6 space-y-4 text-justify text-[15px] leading-relaxed text-white">
-            {intro.map((p) => (
-              <p key={p.slice(0, 30)}>{p}</p>
+            {intro.map((p, i) => (
+              <Reveal key={p.slice(0, 30)} as="p" delay={Math.min(i, 2) * 80}>
+                {p}
+              </Reveal>
             ))}
 
-            <p className="pt-10">{joinUs}</p>
+            <Reveal as="p" className="pt-10">
+              {joinUs}
+            </Reveal>
 
-            <h4 className="font-bold uppercase">Our news and public affairs program</h4>
-            <p>{newsProgram}</p>
+            <Reveal as="h4" from="left" className="border-l-4 border-[#e60000] pl-3 font-bold uppercase">
+              Our news and public affairs program
+            </Reveal>
+            <Reveal as="p">{newsProgram}</Reveal>
 
-            <h4 className="font-bold uppercase">Entertainment</h4>
+            <Reveal as="h4" from="left" className="border-l-4 border-[#e60000] pl-3 font-bold uppercase">
+              Entertainment
+            </Reveal>
             {entertainment.map((p) => (
-              <p key={p.slice(0, 30)}>{p}</p>
+              <Reveal key={p.slice(0, 30)} as="p">
+                {p}
+              </Reveal>
             ))}
           </div>
 
-          <hr className="mb-12 mt-14 border-t border-white/80" />
+          <GrowRule className="mb-12 mt-14" />
 
-          <h2 className="mb-10 text-center text-3xl font-bold text-white">OUR DJs</h2>
+          <SectionHeading>OUR DJs</SectionHeading>
           <PersonGrid names={djs} />
 
-          <hr className="my-8 border-t border-white/80" />
+          <GrowRule className="my-8" />
 
-          <h2 className="mb-10 text-center text-3xl font-bold uppercase text-white">
-            News and Public Affairs Anchors
-          </h2>
+          <SectionHeading className="uppercase">News and Public Affairs Anchors</SectionHeading>
           <PersonGrid names={anchors} />
         </section>
 
