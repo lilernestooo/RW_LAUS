@@ -16,6 +16,57 @@ const tagColor = {
   Uncategorized: "bg-red-600",
 };
 
+// Returns [ref, shown]: shown flips to true once the element scrolls into view
+function useReveal(threshold = 0.15) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [threshold]);
+
+  return [ref, shown];
+}
+
+const hidden = {
+  up: "translate-y-8 opacity-0",
+  left: "-translate-x-10 opacity-0",
+  right: "translate-x-10 opacity-0",
+  zoom: "scale-90 opacity-0",
+};
+
+// Fade/slide in when scrolled into view
+function Reveal({ from = "up", delay = 0, className = "", children }) {
+  const [ref, shown] = useReveal();
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : hidden[from]
+      } ${className}`}
+      style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
+    >
+      {children}
+    </div>
+  );
+}
+
 // 1 card on phones, 2 on tablets, 3 on desktop
 function usePerView() {
   const get = () =>
@@ -33,7 +84,7 @@ function usePerView() {
 
 function NewsCard({ post }) {
   return (
-    <article className="group h-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_12px_30px_-8px_rgba(230,0,0,0.45)]">
+    <article className="group h-full transition-all duration-300 ease-out hover:-translate-y-2">
       {/* Image with zoom + tint */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         {post.image ? (
@@ -48,6 +99,12 @@ function NewsCard({ post }) {
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-red-700/0 transition-colors duration-300 group-hover:bg-red-700/20" />
+
+        {/* Shine sweep */}
+        <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-[900ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
+
+        {/* Red bar along the bottom edge */}
+        <span className="absolute bottom-0 left-0 h-1 w-0 bg-[#e60000] transition-all duration-500 ease-out group-hover:w-full" />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-1">
@@ -203,10 +260,23 @@ function PostCarousel({ perView }) {
           </div>
         </div>
 
+        {/* Autoplay progress bar: refills on every slide, frozen while paused */}
+        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-white/10">
+          <div
+            key={`${index}-${paused}`}
+            className="h-full bg-[#e60000]"
+            style={
+              paused
+                ? { width: 0 }
+                : { animation: `news-progress ${AUTOPLAY_MS}ms linear forwards` }
+            }
+          />
+        </div>
+
         <button
           onClick={prev}
           aria-label="Previous posts"
-          className="absolute left-0 top-1/2 z-10 flex h-10 w-8 -translate-y-1/2 items-center justify-center bg-black/80 text-white hover:bg-red-600"
+          className="absolute left-0 top-1/2 z-10 flex h-10 w-8 -translate-y-1/2 items-center justify-center bg-black/80 text-white transition-all duration-300 hover:-translate-x-1 hover:scale-110 hover:bg-red-600"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <polyline points="15,5 8,12 15,19" />
@@ -215,7 +285,7 @@ function PostCarousel({ perView }) {
         <button
           onClick={next}
           aria-label="Next posts"
-          className="absolute right-0 top-1/2 z-10 flex h-10 w-8 -translate-y-1/2 items-center justify-center bg-black/80 text-white hover:bg-red-600"
+          className="absolute right-0 top-1/2 z-10 flex h-10 w-8 -translate-y-1/2 items-center justify-center bg-black/80 text-white transition-all duration-300 hover:translate-x-1 hover:scale-110 hover:bg-red-600"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <polyline points="9,5 16,12 9,19" />
@@ -223,20 +293,38 @@ function PostCarousel({ perView }) {
         </button>
       </div>
 
-      {/* Dots */}
+      {/* Dots: the active one stretches into a red pill */}
       <div className="mt-8 flex justify-center gap-2">
         {slides.map((s, i) => (
           <button
             key={s.slug}
             onClick={() => goTo(i)}
             aria-label={`Go to post ${i + 1}`}
-            className={`h-3 w-3 rounded-full ${
-              i === index % n ? "bg-neutral-500" : "bg-white"
+            className={`h-3 rounded-full transition-all duration-500 ${
+              i === index % n ? "w-8 bg-red-500" : "w-3 bg-white/80 hover:bg-white"
             }`}
           />
         ))}
       </div>
     </div>
+  );
+}
+
+// Wraps the On Air banner: entrance, gentle float, hover scale and shine
+function AnimatedBanner() {
+  return (
+    <Reveal from="zoom" delay={100}>
+      <div className="float-slow">
+        <div className="group relative cursor-pointer rounded-2xl transition-all duration-500 hover:scale-[1.03]">
+          <OnAirBanner />
+
+          {/* Shine sweep */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+            <div className="absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-[1200ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
+          </div>
+        </div>
+      </div>
+    </Reveal>
   );
 }
 
@@ -261,17 +349,19 @@ export default function News() {
 
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
         {/* Main content */}
-        <section className="min-w-0">
-          <h1 className="mb-6 text-3xl font-bold text-white">Events</h1>
+        <section className="min-w-0 overflow-x-clip">
+          <Reveal from="left">
+            <h1 className="mb-6 text-3xl font-bold text-white">Events</h1>
+          </Reveal>
 
           {/* On Air banner (placeholder art until you have the real image) */}
-          <div className="mx-auto max-w-[585px]">
-            <OnAirBanner />
+          <div className="mx-auto max-w-[585px] p-2">
+            <AnimatedBanner />
           </div>
 
-          <div className="mt-10">
+          <Reveal className="mt-10" delay={150}>
             <PostCarousel key={perView} perView={perView} />
-          </div>
+          </Reveal>
         </section>
 
         {/* Sticky sidebar (banner is shown in the main column on this page) */}

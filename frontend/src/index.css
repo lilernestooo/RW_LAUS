@@ -40,3 +40,21 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .eq-bar { animation: none; transform: scaleY(0.5); }
 }
+
+/*news.jsx*/
+
+@keyframes news-progress {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.float-slow {
+  animation: float-y 5s ease-in-out infinite;
+}
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .float-slow { animation: none; }
+}
