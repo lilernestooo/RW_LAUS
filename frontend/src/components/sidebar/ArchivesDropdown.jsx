@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { archives } from "../../data/posts";
+import { fetchArchives } from "../../api/api";
+import useApi from "../../hooks/useApi";
 
 export default function ArchivesDropdown() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("");
   const ref = useRef(null);
+
+  const { data } = useApi(() => fetchArchives(), []);
+  const archives = data?.data ?? []; // [{ value: "2026-09", label: "September 2026" }]
 
   // Close when clicking outside
   useEffect(() => {
@@ -15,8 +19,8 @@ export default function ArchivesDropdown() {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const pick = (value) => {
-    setSelected(value);
+  const pick = (label) => {
+    setSelected(label);
     setOpen(false);
   };
 
@@ -36,14 +40,14 @@ export default function ArchivesDropdown() {
 
       {open && (
         <ul className="absolute left-0 right-0 top-full z-20 max-h-64 overflow-y-auto border border-white/30 bg-[#808080] text-white">
-          {["Select Month", ...archives].map((a) => (
-            <li key={a}>
+          {[{ value: "", label: "Select Month" }, ...archives].map((a) => (
+            <li key={a.value || "none"}>
               <button
                 type="button"
-                onClick={() => pick(a === "Select Month" ? "" : a)}
+                onClick={() => pick(a.value ? a.label : "")}
                 className="block w-full px-4 py-1.5 text-left hover:bg-[#0a64d8]"
               >
-                {a}
+                {a.label}
               </button>
             </li>
           ))}
