@@ -66,7 +66,7 @@ export default function Post() {
         </h1>
 
         {/* Featured image + gallery */}
-        <PostImage post={post} ratio="aspect-[16/9]" />
+        <PostImage post={post} natural />
         <PostGallery count={post.galleryCount} columns={post.galleryColumns} />
 
         {/* Byline + body */}

@@ -1,4 +1,4 @@
-import bg from "../../assets/images/CRMDM-WEB-17261-scaled.png";
+import bg from "../../assets/images/page1/CRMDM-WEB-17261-scaled.png";
 
 // Whole days from today until Christmas (rolls over to next year after Dec 25)
 function daysToChristmas() {
@@ -26,7 +26,7 @@ export default function OnAirBanner() {
         <div className="relative w-[58%] translate-x-[8%] text-center">
           {/* Twinkling sparkles */}
           <span
-            className="absolute -left-[2%] top-0 animate-pulse text-yellow-300"
+            className="star-glow absolute -left-[2%] top-0"
             style={{ fontSize: "5cqw" }}
           >
             ✦
@@ -75,7 +75,7 @@ export default function OnAirBanner() {
           {/* Red-gold-red divider with a star */}
           <div className="my-[2cqw] flex items-center gap-2">
             <span className="h-px flex-1 bg-gradient-to-r from-transparent to-red-500" />
-            <span className="text-yellow-300" style={{ fontSize: "3.5cqw" }}>
+            <span className="star-glow [animation-delay:600ms]" style={{ fontSize: "3.5cqw" }}>
               ✦
             </span>
             <span className="h-px flex-1 bg-gradient-to-l from-transparent to-red-500" />

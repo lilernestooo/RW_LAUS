@@ -102,3 +102,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .float-slow { animation: none; }
 }
+
+@keyframes starglow {
+  0%, 100% {
+    opacity: 0.75;
+    transform: scale(1);
+    text-shadow: 0 0 4px #ffd75e, 0 0 10px #ffc93c;
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+    text-shadow: 0 0 6px #fff3b0, 0 0 14px #ffd75e, 0 0 26px #ffb300, 0 0 40px #ff9d00;
+  }
+}
+
+.star-glow {
+  display: inline-block;
+  color: #ffe27a;
+  animation: starglow 2s ease-in-out infinite;
+}
