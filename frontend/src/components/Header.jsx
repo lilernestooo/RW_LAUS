@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import banner from "../assets/banner/cropped-NewBanner.jpg";
 
 const links = [
   { label: "Home", to: "/homepage" },
@@ -45,12 +46,13 @@ export default function Header({ onListenLive }) {
   return (
     <header className="mx-auto w-full max-w-[1244px]">
       {/* Logo banner */}
-      <div className="flex h-[148px] items-end justify-center bg-gradient-to-b from-black via-black to-amber-600/70">
-        {/* Placeholder logo - swap for <img src={logo} /> once you have the asset */}
-        <div className="mb-3 flex h-24 w-72 items-center justify-center rounded border-2 border-dashed border-amber-400/60 text-lg font-bold text-amber-400">
-          RW 95.1 FM LOGO
-        </div>
-      </div>
+      <Link to="/" aria-label="RW 95.1 FM home" className="block">
+        <img
+          src={banner}
+          alt="RW 95.1 FM - Keni na Ka'"
+          className="block h-[100px] w-full object-cover object-center sm:h-[125px] lg:h-[148px]"
+        />
+        </Link>
 
       {/* Nav bar */}
       <nav className="relative bg-[#1a1a1a]">

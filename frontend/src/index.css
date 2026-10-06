@@ -4,25 +4,69 @@ body {
   @apply m-0 bg-black font-sans text-white;
 }
 
-.skeleton {
-  position: relative;
-  overflow: hidden;
-  background: #262626;
-  border-radius: 4px;
+/*pageloader.jsx*/
+
+.logo-stage {
+  perspective: 900px;
 }
-.skeleton::after {
+
+.logo-spin {
+  animation: logo-spin 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  transform-style: preserve-3d;
+}
+@keyframes logo-spin {
+  0%   { transform: rotateY(0deg) scale(1); }
+  50%  { transform: rotateY(180deg) scale(1.08); }
+  100% { transform: rotateY(360deg) scale(1); }
+}
+
+/* Shimmer sweep clipped to the logo's own shape */
+.logo-shimmer {
+  position: relative;
+}
+.logo-shimmer::after {
   content: "";
   position: absolute;
   inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-  animation: skeleton-shimmer 1.4s infinite;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  background-size: 250% 100%;
+  background-position: 150% 0;
+  animation: logo-shine 1.6s ease-in-out infinite;
+  -webkit-mask-image: var(--logo-mask);
+  mask-image: var(--logo-mask);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  pointer-events: none;
 }
-@keyframes skeleton-shimmer {
-  100% { transform: translateX(100%); }
+@keyframes logo-shine {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
 }
+
+/* Entrance: fade and rise */
+.logo-enter {
+  animation: logo-enter 500ms ease-out both;
+}
+@keyframes logo-enter {
+  from { opacity: 0; transform: translateY(16px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Shadow shrinks when the logo is edge-on */
+.logo-floor {
+  animation: logo-floor 1.6s ease-in-out infinite;
+}
+@keyframes logo-floor {
+  0%, 100% { transform: scaleX(1);   opacity: 0.7; }
+  50%      { transform: scaleX(0.55); opacity: 0.35; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .skeleton::after { animation: none; }
+  .logo-spin, .logo-shimmer::after, .logo-floor { animation: none; }
 }
 
 /*streampage.jsx*/
