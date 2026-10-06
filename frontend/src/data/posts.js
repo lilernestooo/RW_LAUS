@@ -1,13 +1,17 @@
-import hero31 from "../assets/images/hero-poster-rw-31-350x350.png";
-import anibersayaVII from "../assets/images/LGC05684-1024x576.jpg";
-import fillItToWinIt from "../assets/images/Fill-it-to-Win-It-Half-Page-Ad-1024x767.jpg";
-import anibersaya6 from "../assets/images/CRMDM-WEB-059342-1024x768.png";
-import cheers from "../assets/images/IMG_3319-1024x683.jpg";
-import anibersayaV from "../assets/images/PR-Header-1024x768.png";
-import anibersayaStage from "../assets/images/DSC_0088-1024x684.jpeg";
-import rw27 from "../assets/images/RW-Profile-Picture.png";
-import paragala from "../assets/images/Paragala-1-1024x1024.png";
-import jedMadela from "../assets/images/Jed-Madela-1024x683.jpg";
+import hero31 from "../assets/images/page1/hero-poster-rw-31-350x350.png";
+import anibersayaVII from "../assets/images/page1/LGC05684-1024x576.jpg";
+import fillItToWinIt from "../assets/images/page1/Fill-it-to-Win-It-Half-Page-Ad-1024x767.jpg";
+import anibersaya6 from "../assets/images/page1/CRMDM-WEB-059342-1024x768.png";
+import cheers from "../assets/images/page1/IMG_3319-1024x683.jpg";
+import anibersayaV from "../assets/images/page1/PR-Header-1024x768.png";
+import anibersayaStage from "../assets/images/page1/DSC_0088-1024x684.jpeg";
+import rw27 from "../assets/images/page1/RW-Profile-Picture.png";
+import paragala from "../assets/images/page1/Paragala-1-1024x1024.png";
+import jedMadela from "../assets/images/page1/Jed-Madela-1024x683.jpg";
+//page2//
+import years26 from "../assets/images/page2/26Years.jpg";
+import gotToBelieve from "../assets/images/page2/GotToBelieveConcert_forPosting-1024x737.jpg";
+import ogieOaNa from "../assets/images/page2/OGIE2-826x445-768x414.jpg";
 
 export const categories = ["Events", "News", "Uncategorized"];
 
@@ -325,7 +329,7 @@ const page2Posts = [
   categories: ["News"],
   excerpt: "By: Aubrey “DJ Alex” F. Sembrano Today, we remember a great man, a visionary and…",
   date: null,
-  image: null,
+  image: years26,
   byline: "By: Aubrey “DJ Alex” F. Sembrano",
   body: [
     "Today, we remember a great man, a visionary and a committed philanthropist. A man whose altruism pushed him to establish a radio station that would give Kapampangans an avenue to access the most accurate information about their communities during the tragic lahar inundation back in 1995.",
@@ -342,7 +346,7 @@ const page2Posts = [
   categories: ["Events"],
   excerpt: "By: Aubrey “DJ Alex” F. Sembrano What happens when a man with a wide vocal range…",
   date: null,
-  image: null,
+  image: gotToBelieve,
   byline: "By: Aubrey “DJ Alex” F. Sembrano",
   body: [
     "What happens when a man with a wide vocal range shares the stage with a singer songwriter with a calming hypnotic voice? That’s madness, we know. But, you’ve “Got 2 Believe” cause it’s happening this 2020! OPM favorites Joey G and Ice Seguerra are bound to share the same stage for an evening of love concert—Got 2 Believe! on February 05, 2020 at The LausGroup Event Centre.",
@@ -358,7 +362,7 @@ const page2Posts = [
   categories: ["Events", "News"],
   excerpt: "By: Aubrey “DJ Alex” F. Sembrano We did it again! The recently held “OA Na Tour…",
   date: null,
-  image: null,
+  image: ogieOaNa,
   byline: "By: Aubrey “DJ Alex” F. Sembrano",
   body: [
     "We did it again!  The recently held “OA Na Tour Sa Pampanga” by Ogie Alcasid at The Laus Group Event Centre last February 8, 2019 was another smash hit!",

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { formatDate } from "../../data/posts";
+import { formatDate } from "../../utils/formatDate";
 import PostImage from "./PostImage";
 
 function ClockIcon() {

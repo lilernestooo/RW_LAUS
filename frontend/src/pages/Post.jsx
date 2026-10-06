@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { posts } from "../data/posts";
+import { fetchPost } from "../api/api";
+import useApi from "../hooks/useApi";
 import PostImage from "../components/post/PostImage";
 import PostGallery from "../components/post/PostGallery";
 import RelatedPostCard from "../components/post/RelatedPostCard";
@@ -9,26 +10,27 @@ import Sidebar from "../components/sidebar/Sidebar";
 
 export default function Post() {
   const { slug } = useParams();
-  const index = posts.findIndex((p) => p.slug === slug);
-  const post = posts[index];
+  const { data, loading, error } = useApi(() => fetchPost(slug), [slug]);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [slug]);
 
-  if (!post) return <Navigate to="/" replace />;
+  if (error?.status === 404) return <Navigate to="/" replace />;
+  if (loading) return <p className="text-neutral-300">Loading…</p>;
+  if (error || !data) {
+    return (
+      <p className="text-neutral-300">
+        Could not load this post. Make sure Apache and MySQL are running.
+      </p>
+    );
+  }
 
-  const previous = posts[index + 1]; // older post
-  const next = posts[index - 1]; // newer post
-  const primaryCategory = post.categories[post.categories.length - 1];
+  const post = data.data;
+  const { previous, next, related = [] } = post;
+  const primaryCategory = post.categories[post.categories.length - 1] ?? "Uncategorized";
 
-  const related = posts
-    .filter(
-      (p) => p.slug !== post.slug && p.categories.some((c) => post.categories.includes(c))
-    )
-    .slice(0, 3);
-
-  const body = post.body ?? [post.excerpt];
+  const body = post.body?.length ? post.body : [post.excerpt];
   const bylineLines = post.bylineLines ?? (post.byline ? [post.byline] : []);
 
   return (
@@ -66,8 +68,12 @@ export default function Post() {
         </h1>
 
         {/* Featured image + gallery */}
-        <PostImage post={post} ratio="aspect-[16/9]" />
-        <PostGallery count={post.galleryCount} columns={post.galleryColumns} />
+        <PostImage post={post} natural />
+        <PostGallery
+          images={post.gallery}
+          count={post.galleryCount}
+          columns={post.galleryColumns}
+        />
 
         {/* Byline + body */}
         <div className="mt-8 space-y-5 text-base leading-relaxed text-neutral-200">

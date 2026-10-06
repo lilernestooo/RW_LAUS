@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { posts, formatDate } from "../data/posts";
+import { fetchPosts } from "../api/api";
+import useApi from "../hooks/useApi";
+import { formatDate } from "../utils/formatDate";
 import Sidebar from "../components/sidebar/Sidebar";
 import OnAirBanner from "../components/sidebar/OnAirBanner";
 
@@ -8,7 +10,6 @@ const PAGE_SIZE = 10;
 const AUTHOR = "l@usrw951";
 const AUTOPLAY_MS = 4000;
 const SWIPE_PX = 50;
-const slides = posts.slice(0, PAGE_SIZE); // all of page 1
 
 const tagColor = {
   Events: "bg-[#00b894]",
@@ -148,7 +149,7 @@ function NewsCard({ post }) {
   );
 }
 
-function PostCarousel({ perView }) {
+function PostCarousel({ slides, perView }) {
   const n = slides.length;
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(true);
@@ -331,6 +332,8 @@ function AnimatedBanner() {
 export default function News() {
   const perView = usePerView();
   const [showTop, setShowTop] = useState(false);
+  const { data } = useApi(() => fetchPosts({ page: 1, per_page: PAGE_SIZE }), []);
+  const slides = data?.data ?? [];
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400);
@@ -360,7 +363,11 @@ export default function News() {
           </div>
 
           <Reveal className="mt-10" delay={150}>
-            <PostCarousel key={perView} perView={perView} />
+            {slides.length > 0 ? (
+              <PostCarousel key={`${perView}-${slides.length}`} slides={slides} perView={perView} />
+            ) : (
+              <p className="text-neutral-300">Loading…</p>
+            )}
           </Reveal>
         </section>
 
