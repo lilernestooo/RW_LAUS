@@ -1,3 +1,14 @@
+import hero31 from "../assets/images/hero-poster-rw-31-350x350.png";
+import anibersayaVII from "../assets/images/LGC05684-1024x576.jpg";
+import fillItToWinIt from "../assets/images/Fill-it-to-Win-It-Half-Page-Ad-1024x767.jpg";
+import anibersaya6 from "../assets/images/CRMDM-WEB-059342-1024x768.png";
+import cheers from "../assets/images/IMG_3319-1024x683.jpg";
+import anibersayaV from "../assets/images/PR-Header-1024x768.png";
+import anibersayaStage from "../assets/images/DSC_0088-1024x684.jpeg";
+import rw27 from "../assets/images/RW-Profile-Picture.png";
+import paragala from "../assets/images/Paragala-1-1024x1024.png";
+import jedMadela from "../assets/images/Jed-Madela-1024x683.jpg";
+
 export const categories = ["Events", "News", "Uncategorized"];
 
 // Archives dropdown (same on every page)
@@ -33,7 +44,7 @@ const page1Posts = [
   categories: ["Events", "News"],
   excerpt: "31 Years of RW 95.1 FM: What Comes Next? By Jasmine Leigh Anne “DJ Lorie” S. Tizon…",
   date: "2026-09-01",
-  image: null,
+  image: hero31,
   byline: "By Jasmine Leigh Anne “DJ Lorie” S. Tizon",
   body: [
     "In a constantly changing world, radio remains wonderfully human.",
@@ -62,7 +73,7 @@ const page1Posts = [
     categories: ["Events", "News"],
     excerpt: "By Jasmine “DJ Lorie” S. Tizon There are celebrations that happen when everything is perfect–with…",
     date: "2026-09-01",
-    image: null,
+    image: anibersayaVII,
     galleryCount: 11,
     byline: "By Jasmine “DJ Lorie” S. Tizon",
     body: [
@@ -88,7 +99,7 @@ const page1Posts = [
   categories: ["Uncategorized"],
   excerpt: "By Sophia “DJ Ellie” P. Velasquez “Keni Na Ka!” We’ve said it for so…",
   date: "2025-08-15",
-  image: null,
+  image: fillItToWinIt,
   galleryCount: 10,
   galleryColumns: 5,
   bylineLines: ["By Sophia “DJ Ellie” P. Velasquez", "“Keni Na Ka!”"],
@@ -117,7 +128,7 @@ const page1Posts = [
   categories: ["Events", "News"],
   excerpt: "By Sophia “DJ Ellie” P. Velasquez We are buzzing with excitement as your countryside radio, RW 95.1…",
   date: "2024-09-02",
-  image: null,
+  image: anibersaya6,
   byline: "By Sophia “DJ Ellie” P. Velasquez",
   body: [
     "We are buzzing with excitement as your countryside radio, RW 95.1 FM, celebrates 29 glorious years on the airwaves!",
@@ -140,7 +151,7 @@ const page1Posts = [
   categories: ["Events", "News"],
   excerpt: "By Sophia “DJ Ellie” P. Velasquez In life, we often find ourselves faced with challenges…",
   date: "2023-09-28",
-  image: null,
+  image: cheers,
   galleryCount: 48,
   galleryColumns: 3,
   byline: "By Sophia “DJ Ellie” P. Velasquez",
@@ -168,7 +179,7 @@ const page1Posts = [
   categories: ["News"],
   excerpt: "By Sophia “DJ Ellie” P. Velasquez Despite the challenges that our community has faced in the…",
   date: null,
-  image: null,
+  image: anibersayaV,
   byline: "By Sophia “DJ Ellie” P. Velasquez",
   body: [
     "Despite the challenges that our community has faced in the past, such as the devastating Mt. Pinatubo eruption in 1991, the fun never stops in AniberSAYA sa Barangay V, an event that brings joy, laughter, and entertainment to the people in the featured barangays and surrounding areas.",
@@ -192,7 +203,7 @@ const page1Posts = [
   categories: ["Events"],
   excerpt: "By Hannah Pamela Escordial With the audience’s wide smiles and laughter visible throughout the program and…",
   date: null,
-  image: null,
+  image: anibersayaStage,
   galleryCount: 24,
   galleryColumns: 6,
   byline: "By Hannah Pamela Escordial",
@@ -226,7 +237,7 @@ const page1Posts = [
   categories: ["Events"],
   excerpt: "By Sophia “DJ Ellie” P. Velasquez Being born in the midst of a great tragedy that is…",
   date: null,
-  image: null,
+  image: rw27,
   byline: "By Sophia “DJ Ellie” P. Velasquez",
   body: [
     "Being born in the midst of a great tragedy that is the Mount Pinatubo eruption in 1991 and the subsequent lahar rampage may have been the very sign that RW 95.1 FM is destined to become one that will overcome whatever challenge thrown its way.",
@@ -253,7 +264,7 @@ const page1Posts = [
   categories: ["Events"],
   excerpt: "RW 95.1 FM was hailed as Best Local Radio Station in Central Luzon in the recently concluded…",
   date: null,
-  image: null,
+  image: paragala,
   body: [
     "RW 95.1 FM was hailed as Best Local Radio Station in Central Luzon in the recently concluded Paragala: The Central Luzon Media Award, the biggest student-based award giving body in the Philippines initiated by Holy Angel University Communicators’ League (HAU CL).",
     "At least 27 schools participated in the selection of winners with more than 20,000 votes counted from different provinces of the region to come up with this year’s awardees.",
@@ -274,7 +285,7 @@ const page1Posts = [
     categories: ["Events"],
     excerpt: "By Aubrey “DJ Alex” F. Sembrano I think our senses have their own way of recognizing what…",
     date: null,
-    image: null,
+    image: jedMadela,
     byline: "By Aubrey “DJ Alex” F. Sembrano",
     body: [
       "I think our senses have their own way of recognizing what is spectacular. You hear something incredible and your eyes focus on it; your ears lock on it; your skin’s hair follicles contract, give you goosebumps and a certain chill crawls down your spine; and, your palm repeatedly strike together to express the astonishment.",
