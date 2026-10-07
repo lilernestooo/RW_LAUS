@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { fetchArchives } from "../../api/api";
 import useApi from "../../hooks/useApi";
 
 export default function ArchivesDropdown() {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("");
   const ref = useRef(null);
+  const navigate = useNavigate();
+  const { month } = useParams(); // set on /archive/:month pages
 
   const { data } = useApi(() => fetchArchives(), []);
   const archives = data?.data ?? []; // [{ value: "2026-09", label: "September 2026" }]
+  const selected = archives.find((a) => a.value === month)?.label ?? "";
 
   // Close when clicking outside
   useEffect(() => {
@@ -19,9 +22,9 @@ export default function ArchivesDropdown() {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const pick = (label) => {
-    setSelected(label);
+  const pick = (a) => {
     setOpen(false);
+    navigate(a.value ? `/archive/${a.value}` : "/");
   };
 
   return (
@@ -44,7 +47,7 @@ export default function ArchivesDropdown() {
             <li key={a.value || "none"}>
               <button
                 type="button"
-                onClick={() => pick(a.value ? a.label : "")}
+                onClick={() => pick(a)}
                 className="block w-full px-4 py-1.5 text-left hover:bg-[#0a64d8]"
               >
                 {a.label}

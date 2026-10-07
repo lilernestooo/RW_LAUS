@@ -3,64 +3,145 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RW Upload Photos</title>
+<title>RW Update</title>
 <style>
-  body { font-family: system-ui, sans-serif; background: #111; color: #eee; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+  body { font-family: system-ui, sans-serif; background: #111; color: #eee; max-width: 900px; margin: 2rem auto; padding: 0 1rem 4rem; }
   h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.05rem; margin: 2rem 0 .4rem; border-top: 1px solid #333; padding-top: 1.2rem; }
+  p.hint { color: #aaa; margin: .2rem 0 .6rem; }
   label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
-  select, input[type=password], input[type=file] { width: 100%; padding: .6rem; background: #222; color: #eee; border: 1px solid #444; box-sizing: border-box; }
-  .row { display: flex; gap: 1.5rem; margin-top: .5rem; }
-  .row label { display: inline; font-weight: normal; margin: 0; }
+  select, input { padding: .6rem; background: #222; color: #eee; border: 1px solid #444; box-sizing: border-box; color-scheme: dark; }
+  select, input[type=password], input[type=file] { width: 100%; }
+  input.empty { border-color: #e60000; }
   button { padding: .6rem 1.2rem; background: #e60000; color: #fff; border: 0; cursor: pointer; font-weight: 700; }
   button:disabled { opacity: .5; cursor: wait; }
-  #status { margin: 1rem 0; white-space: pre-wrap; }
+  .tabs { display: flex; gap: .5rem; margin: 1.2rem 0 0; }
+  .tabs button { background: #222; border: 1px solid #444; }
+  .tabs button.on { background: #e60000; border-color: #e60000; }
+  .status { margin: .6rem 0; white-space: pre-wrap; min-height: 1.2em; }
+  .row { display: flex; gap: .6rem; align-items: center; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .6rem; margin-top: .6rem; }
   .item { position: relative; }
   .item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
   .item button { position: absolute; top: 4px; right: 4px; padding: .1rem .5rem; background: rgba(0,0,0,.75); }
-  h2 { font-size: 1.1rem; margin-top: 2rem; }
+  #featuredNow { max-width: 260px; display: block; margin-top: .4rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  td { padding: .45rem .5rem; border-bottom: 1px solid #2a2a2a; vertical-align: middle; }
+  td.date { width: 11rem; }
+  .bar { position: sticky; bottom: 0; background: #111; padding: .8rem 0; border-top: 1px solid #333; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<h1>Upload photos</h1>
+<h1>Update site content</h1>
 
-<label for="token">Upload password (UPLOAD_TOKEN in config.php)</label>
+<label for="token">Upload password (UPLOAD_TOKEN in .env). Enter it once for everything on this page.</label>
 <input id="token" type="password" autocomplete="off">
 
-<label for="post">Post</label>
-<select id="post"></select>
-
-<div class="row">
-  <label><input type="radio" name="type" value="gallery" checked> Gallery photos</label>
-  <label><input type="radio" name="type" value="featured"> Featured image (replaces current)</label>
+<div class="tabs">
+  <button type="button" id="tabPostBtn" class="on">One post: date and photos</button>
+  <button type="button" id="tabDatesBtn">All post dates</button>
 </div>
 
-<label for="files">Images (JPG, PNG, WEBP, GIF, up to 8 MB each)</label>
-<input id="files" type="file" accept="image/*" multiple>
-<div id="preview" class="grid"></div>
+<!-- ============ TAB 1: one post ============ -->
+<section id="tabPost">
+  <label for="post">Post</label>
+  <select id="post"></select>
 
-<p><button id="go">Upload</button></p>
-<div id="status"></div>
+  <h2>Publish month and year</h2>
+  <p class="hint">The post appears under this month in Archives.</p>
+  <div class="row">
+    <input id="date" type="month" placeholder="YYYY-MM">
+    <button id="saveDate" type="button">Save month</button>
+  </div>
+  <div id="dateStatus" class="status"></div>
 
-<h2>Current gallery for this post</h2>
-<div id="gallery" class="grid"></div>
+  <h2>Featured image</h2>
+  <p class="hint">The main picture shown on the cards and at the top of the post. Replaces the current one.</p>
+  <img id="featuredNow" alt="" hidden>
+  <input id="featuredFile" type="file" accept="image/*">
+  <p><button id="saveFeatured" type="button">Upload featured image</button></p>
+  <div id="featuredStatus" class="status"></div>
+
+  <h2>Gallery photos</h2>
+  <p class="hint">JPG, PNG, WEBP or GIF, up to 8 MB each. You can choose many at once.</p>
+  <input id="galleryFiles" type="file" accept="image/*" multiple>
+  <div id="preview" class="grid"></div>
+  <p><button id="saveGallery" type="button">Upload gallery photos</button></p>
+  <div id="galleryStatus" class="status"></div>
+
+  <h2>Current gallery for this post</h2>
+  <div id="gallery" class="grid"></div>
+</section>
+
+<!-- ============ TAB 2: all dates ============ -->
+<section id="tabDates" hidden>
+  <p class="hint">Set the publish month and year of every post. Red boxes have none yet. Only the ones you change are saved.</p>
+  <table><tbody id="rows"></tbody></table>
+  <div class="bar">
+    <button id="saveAll" type="button">Save changes</button>
+    <div id="allStatus" class="status"></div>
+  </div>
+</section>
 
 <script>
 const API = "../api";
-const $ = (id) => document.getElementById(id);
 const BATCH = 10; // PHP allows 20 files per request by default
+const $ = (id) => document.getElementById(id);
 
-function say(msg) { $("status").textContent = msg; }
+let posts = [];
 
+// The database keeps a full date (YYYY-MM-DD). This page only shows month and year,
+// and saves the 1st of the chosen month.
+const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+const toMonth = (d) => (d ? d.slice(0, 7) : "");
+const toDate = (m) => (m ? `${m}-01` : "");
+
+const say = (id, msg) => { $(id).textContent = msg; };
+const authHeaders = (extra = {}) => ({ "X-Upload-Token": $("token").value, ...extra });
+const currentPost = () => posts.find((p) => p.slug === $("post").value);
+
+function needPassword(statusId) {
+  if ($("token").value) return false;
+  say(statusId, "Enter the upload password at the top.");
+  return true;
+}
+
+// ---------- Loading ----------
 async function loadPosts() {
-  const res = await fetch(`${API}/posts.php?per_page=50`);
-  const json = await res.json();
-  for (const p of json.data) {
+  const all = [];
+  let page = 1, totalPages = 1;
+  do {
+    const res = await fetch(`${API}/posts.php?per_page=50&page=${page}`);
+    const json = await res.json();
+    all.push(...json.data);
+    totalPages = json.meta.total_pages;
+    page++;
+  } while (page <= totalPages);
+  posts = all;
+
+  const sel = $("post");
+  const keep = sel.value;
+  sel.replaceChildren();
+  for (const p of posts) {
     const o = document.createElement("option");
     o.value = p.slug;
     o.textContent = p.title;
-    $("post").appendChild(o);
+    sel.appendChild(o);
   }
+  if (posts.some((p) => p.slug === keep)) sel.value = keep;
+
+  showPost();
+  renderTable();
+}
+
+function showPost() {
+  const p = currentPost();
+  if (!p) return;
+  $("date").value = toMonth(p.date);
+  const img = $("featuredNow");
+  img.hidden = !p.image;
+  if (p.image) img.src = p.image;
   loadGallery();
 }
 
@@ -85,51 +166,100 @@ async function loadGallery() {
   }
 }
 
-async function removeImage(id) {
-  if (!confirm("Delete this photo?")) return;
-  const fd = new FormData();
-  fd.append("action", "delete");
-  fd.append("id", id);
-  const res = await fetch(`${API}/upload.php`, { method: "POST", headers: { "X-Upload-Token": $("token").value }, body: fd });
-  const json = await res.json();
-  say(res.ok ? "Deleted." : json.error);
-  loadGallery();
+// ---------- Dates (shared by both tabs) ----------
+async function sendDates(dates, statusId, button) {
+  if (needPassword(statusId)) return false;
+  button.disabled = true;
+  let ok = false;
+  try {
+    const res = await fetch(`${API}/dates.php`, {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ dates }),
+    });
+    const json = await res.json();
+    if (json.data) {
+      ok = json.data.saved > 0;
+      say(statusId, `Saved ${json.data.saved} date(s).` + (json.data.errors.length ? "\n\nProblems:\n" + json.data.errors.join("\n") : ""));
+    } else {
+      say(statusId, json.error || "Unknown error");
+    }
+  } catch (e) {
+    say(statusId, "Network error: " + e.message);
+  }
+  button.disabled = false;
+  return ok;
 }
 
-$("files").onchange = () => {
-  const box = $("preview");
-  box.replaceChildren();
-  for (const f of $("files").files) {
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(f);
-    img.style.cssText = "width:100%;aspect-ratio:4/3;object-fit:cover";
-    box.appendChild(img);
-  }
+$("saveDate").onclick = async () => {
+  const p = currentPost();
+  if (!p) return;
+  const value = $("date").value;
+  if (value && !MONTH.test(value)) return say("dateStatus", "Use the format YYYY-MM, for example 2018-11.");
+  if (value === toMonth(p.date)) return say("dateStatus", "No change.");
+  await sendDates({ [p.slug]: toDate(value) }, "dateStatus", $("saveDate"));
+  loadPosts();
 };
 
-$("post").onchange = loadGallery;
+function renderTable() {
+  const body = $("rows");
+  body.replaceChildren();
+  for (const p of posts) {
+    const tr = document.createElement("tr");
+    const title = document.createElement("td");
+    title.textContent = p.title;
 
-$("go").onclick = async () => {
-  const files = [...$("files").files];
-  if (!files.length) return say("Choose at least one image.");
-  if (!$("token").value) return say("Enter the upload password.");
+    const cell = document.createElement("td");
+    cell.className = "date";
+    const input = document.createElement("input");
+    input.type = "month";
+    input.placeholder = "YYYY-MM";
+    input.value = toMonth(p.date);
+    input.dataset.slug = p.slug;
+    input.dataset.orig = toMonth(p.date);
+    input.classList.toggle("empty", !input.value);
+    input.oninput = () => input.classList.toggle("empty", !input.value);
+    cell.appendChild(input);
 
-  const type = document.querySelector("input[name=type]:checked").value;
-  const batches = [];
+    tr.append(title, cell);
+    body.appendChild(tr);
+  }
+}
+
+$("saveAll").onclick = async () => {
+  const dates = {};
+  let bad = null;
+  document.querySelectorAll("#rows input").forEach((i) => {
+    if (i.value === i.dataset.orig) return; // untouched: keep whatever is stored
+    if (i.value && !MONTH.test(i.value)) bad = i.value;
+    dates[i.dataset.slug] = toDate(i.value);
+  });
+  if (bad) return say("allStatus", `"${bad}" is not valid. Use the format YYYY-MM, for example 2018-11.`);
+  if (!Object.keys(dates).length) return say("allStatus", "Nothing changed.");
+  await sendDates(dates, "allStatus", $("saveAll"));
+  loadPosts();
+};
+
+// ---------- Photos ----------
+async function sendImages(type, files, statusId, button) {
+  if (!files.length) return say(statusId, "Choose at least one image.");
+  if (needPassword(statusId)) return;
+
   const list = type === "featured" ? files.slice(0, 1) : files;
+  const batches = [];
   for (let i = 0; i < list.length; i += BATCH) batches.push(list.slice(i, i + BATCH));
 
-  $("go").disabled = true;
+  button.disabled = true;
   let ok = 0;
   const problems = [];
   for (let b = 0; b < batches.length; b++) {
-    say(`Uploading batch ${b + 1} of ${batches.length}…`);
+    say(statusId, `Uploading batch ${b + 1} of ${batches.length}…`);
     const fd = new FormData();
     fd.append("slug", $("post").value);
     fd.append("type", type);
     batches[b].forEach((f) => fd.append("images[]", f));
     try {
-      const res = await fetch(`${API}/upload.php`, { method: "POST", headers: { "X-Upload-Token": $("token").value }, body: fd });
+      const res = await fetch(`${API}/upload.php`, { method: "POST", headers: authHeaders(), body: fd });
       const json = await res.json();
       if (json.data) { ok += json.data.uploaded.length; problems.push(...json.data.errors); }
       else problems.push(json.error || "Unknown error");
@@ -137,13 +267,56 @@ $("go").onclick = async () => {
       problems.push("Network error: " + e.message);
     }
   }
-  $("go").disabled = false;
-  say(`Uploaded ${ok} of ${list.length}.` + (problems.length ? "\n\nProblems:\n" + problems.join("\n") : ""));
-  $("files").value = "";
-  $("preview").replaceChildren();
-  loadGallery();
+  button.disabled = false;
+  say(statusId, `Uploaded ${ok} of ${list.length}.` + (problems.length ? "\n\nProblems:\n" + problems.join("\n") : ""));
+  await loadPosts();
+}
+
+$("saveFeatured").onclick = async () => {
+  await sendImages("featured", [...$("featuredFile").files], "featuredStatus", $("saveFeatured"));
+  $("featuredFile").value = "";
 };
 
+$("saveGallery").onclick = async () => {
+  await sendImages("gallery", [...$("galleryFiles").files], "galleryStatus", $("saveGallery"));
+  $("galleryFiles").value = "";
+  $("preview").replaceChildren();
+};
+
+$("galleryFiles").onchange = () => {
+  const box = $("preview");
+  box.replaceChildren();
+  for (const f of $("galleryFiles").files) {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(f);
+    img.style.cssText = "width:100%;aspect-ratio:4/3;object-fit:cover";
+    box.appendChild(img);
+  }
+};
+
+async function removeImage(id) {
+  if (!confirm("Delete this photo?")) return;
+  if (needPassword("galleryStatus")) return;
+  const fd = new FormData();
+  fd.append("action", "delete");
+  fd.append("id", id);
+  const res = await fetch(`${API}/upload.php`, { method: "POST", headers: authHeaders(), body: fd });
+  const json = await res.json();
+  say("galleryStatus", res.ok ? "Deleted." : json.error);
+  loadGallery();
+}
+
+// ---------- Tabs ----------
+function openTab(name) {
+  $("tabPost").hidden = name !== "post";
+  $("tabDates").hidden = name !== "dates";
+  $("tabPostBtn").classList.toggle("on", name === "post");
+  $("tabDatesBtn").classList.toggle("on", name === "dates");
+}
+$("tabPostBtn").onclick = () => openTab("post");
+$("tabDatesBtn").onclick = () => openTab("dates");
+
+$("post").onchange = showPost;
 loadPosts();
 </script>
 </body>
