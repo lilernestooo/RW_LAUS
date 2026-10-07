@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RW Upload Photos</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #111; color: #eee; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.4rem; }
+  label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
+  select, input[type=password], input[type=file] { width: 100%; padding: .6rem; background: #222; color: #eee; border: 1px solid #444; box-sizing: border-box; }
+  .row { display: flex; gap: 1.5rem; margin-top: .5rem; }
+  .row label { display: inline; font-weight: normal; margin: 0; }
+  button { padding: .6rem 1.2rem; background: #e60000; color: #fff; border: 0; cursor: pointer; font-weight: 700; }
+  button:disabled { opacity: .5; cursor: wait; }
+  #status { margin: 1rem 0; white-space: pre-wrap; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .6rem; margin-top: .6rem; }
+  .item { position: relative; }
+  .item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+  .item button { position: absolute; top: 4px; right: 4px; padding: .1rem .5rem; background: rgba(0,0,0,.75); }
+  h2 { font-size: 1.1rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<h1>Upload photos</h1>
+
+<label for="token">Upload password (UPLOAD_TOKEN in config.php)</label>
+<input id="token" type="password" autocomplete="off">
+
+<label for="post">Post</label>
+<select id="post"></select>
+
+<div class="row">
+  <label><input type="radio" name="type" value="gallery" checked> Gallery photos</label>
+  <label><input type="radio" name="type" value="featured"> Featured image (replaces current)</label>
+</div>
+
+<label for="files">Images (JPG, PNG, WEBP, GIF, up to 8 MB each)</label>
+<input id="files" type="file" accept="image/*" multiple>
+<div id="preview" class="grid"></div>
+
+<p><button id="go">Upload</button></p>
+<div id="status"></div>
+
+<h2>Current gallery for this post</h2>
+<div id="gallery" class="grid"></div>
+
+<script>
+const API = "../api";
+const $ = (id) => document.getElementById(id);
+const BATCH = 10; // PHP allows 20 files per request by default
+
+function say(msg) { $("status").textContent = msg; }
+
+async function loadPosts() {
+  const res = await fetch(`${API}/posts.php?per_page=50`);
+  const json = await res.json();
+  for (const p of json.data) {
+    const o = document.createElement("option");
+    o.value = p.slug;
+    o.textContent = p.title;
+    $("post").appendChild(o);
+  }
+  loadGallery();
+}
+
+async function loadGallery() {
+  const box = $("gallery");
+  box.replaceChildren();
+  const res = await fetch(`${API}/upload.php?slug=${encodeURIComponent($("post").value)}`);
+  const json = await res.json();
+  if (!json.data || !json.data.length) { box.textContent = "No uploaded gallery photos yet."; return; }
+  for (const img of json.data) {
+    const wrap = document.createElement("div");
+    wrap.className = "item";
+    const el = document.createElement("img");
+    el.src = img.url;
+    el.loading = "lazy";
+    const del = document.createElement("button");
+    del.textContent = "✕";
+    del.title = "Delete";
+    del.onclick = () => removeImage(img.id);
+    wrap.append(el, del);
+    box.appendChild(wrap);
+  }
+}
+
+async function removeImage(id) {
+  if (!confirm("Delete this photo?")) return;
+  const fd = new FormData();
+  fd.append("action", "delete");
+  fd.append("id", id);
+  const res = await fetch(`${API}/upload.php`, { method: "POST", headers: { "X-Upload-Token": $("token").value }, body: fd });
+  const json = await res.json();
+  say(res.ok ? "Deleted." : json.error);
+  loadGallery();
+}
+
+$("files").onchange = () => {
+  const box = $("preview");
+  box.replaceChildren();
+  for (const f of $("files").files) {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(f);
+    img.style.cssText = "width:100%;aspect-ratio:4/3;object-fit:cover";
+    box.appendChild(img);
+  }
+};
+
+$("post").onchange = loadGallery;
+
+$("go").onclick = async () => {
+  const files = [...$("files").files];
+  if (!files.length) return say("Choose at least one image.");
+  if (!$("token").value) return say("Enter the upload password.");
+
+  const type = document.querySelector("input[name=type]:checked").value;
+  const batches = [];
+  const list = type === "featured" ? files.slice(0, 1) : files;
+  for (let i = 0; i < list.length; i += BATCH) batches.push(list.slice(i, i + BATCH));
+
+  $("go").disabled = true;
+  let ok = 0;
+  const problems = [];
+  for (let b = 0; b < batches.length; b++) {
+    say(`Uploading batch ${b + 1} of ${batches.length}…`);
+    const fd = new FormData();
+    fd.append("slug", $("post").value);
+    fd.append("type", type);
+    batches[b].forEach((f) => fd.append("images[]", f));
+    try {
+      const res = await fetch(`${API}/upload.php`, { method: "POST", headers: { "X-Upload-Token": $("token").value }, body: fd });
+      const json = await res.json();
+      if (json.data) { ok += json.data.uploaded.length; problems.push(...json.data.errors); }
+      else problems.push(json.error || "Unknown error");
+    } catch (e) {
+      problems.push("Network error: " + e.message);
+    }
+  }
+  $("go").disabled = false;
+  say(`Uploaded ${ok} of ${list.length}.` + (problems.length ? "\n\nProblems:\n" + problems.join("\n") : ""));
+  $("files").value = "";
+  $("preview").replaceChildren();
+  loadGallery();
+};
+
+loadPosts();
+</script>
+</body>
+</html>
