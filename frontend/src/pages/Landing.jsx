@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { posts } from "../data/posts";
+import { fetchPosts } from "../api/api";
+import useApi from "../hooks/useApi";
 import PostCard from "../components/post/PostCard";
 import Pagination from "../components/post/Pagination";
 import Sidebar from "../components/sidebar/Sidebar";
@@ -9,19 +10,29 @@ const PAGE_SIZE = 10;
 
 export default function Landing() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+  const page = Math.max(Number(searchParams.get("page")) || 1, 1);
 
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const page = Math.min(Math.max(pageFromUrl, 1), totalPages);
+  const { data, loading, error } = useApi(
+    () => fetchPosts({ page, per_page: PAGE_SIZE }),
+    [page]
+  );
+  const visible = data?.data ?? [];
+  const totalPages = data?.meta.total_pages ?? 1;
 
   const [showTop, setShowTop] = useState(false);
-
-  const visible = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const goToPage = (n) => {
     window.scrollTo({ top: 0 });
     setSearchParams(n === 1 ? {} : { page: n });
   };
+
+  // If the URL asks for a page that doesn't exist (?page=99), jump to the last one
+  useEffect(() => {
+    if (data && data.meta.total_pages > 0 && page > data.meta.total_pages) {
+      const last = data.meta.total_pages;
+      setSearchParams(last === 1 ? {} : { page: last }, { replace: true });
+    }
+  }, [data, page, setSearchParams]);
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400);
@@ -33,11 +44,19 @@ export default function Landing() {
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
       {/* Main content */}
       <section>
-        <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2">
-          {visible.map((post) => (
-            <PostCard key={post.slug} post={post} />
-          ))}
-        </div>
+        {error && !data ? (
+          <p className="text-neutral-300">
+            Could not load posts. Make sure Apache and MySQL are running.
+          </p>
+        ) : loading && !data ? (
+          <p className="text-neutral-300">Loading…</p>
+        ) : (
+          <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2">
+            {visible.map((post) => (
+              <PostCard key={post.slug} post={post} />
+            ))}
+          </div>
+        )}
         <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
       </section>
 

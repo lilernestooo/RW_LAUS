@@ -1,16 +1,44 @@
 <?php
 /**
  * Shared config + helpers for the RW 95.1 FM API.
+ * Place the whole rw-backend folder in C:\xampp\htdocs\
  */
 
-// ---- Database (XAMPP defaults) ----
-const DB_HOST = '127.0.0.1';
-const DB_NAME = 'db_rw';
-const DB_USER = 'root';
-const DB_PASS = '';
+// ---- Load secrets from backend/.env (plain KEY=value lines) ----
+function load_env(string $file): array {
+    if (!is_file($file)) return [];
+    $env = [];
+    foreach (file($file, FILE_IGNORE_NEW_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#' || strpos($line, '=') === false) continue;
+        [$key, $val] = explode('=', $line, 2);
+        $val = trim($val);
+        if (strlen($val) >= 2 && ($val[0] === '"' || $val[0] === "'") && substr($val, -1) === $val[0]) {
+            $val = substr($val, 1, -1);
+        }
+        $env[trim($key)] = $val;
+    }
+    return $env;
+}
+$ENV = load_env(__DIR__ . '/../.env');
+function env(string $key, string $default = ''): string {
+    global $ENV;
+    return $ENV[$key] ?? $default;
+}
 
-// URL path where the backend folder lives under htdocs   <-- CHANGED
+// ---- Database (values come from .env) ----
+define('DB_HOST', env('DB_HOST', '127.0.0.1'));
+define('DB_NAME', env('DB_NAME', 'db_rw'));
+define('DB_USER', env('DB_USER', 'root'));
+define('DB_PASS', env('DB_PASS', ''));
+
+// URL path where the backend folder lives under htdocs
 const BASE_PATH = '/RW_LAUS/backend';
+
+// ---- Uploads ----
+define('UPLOAD_TOKEN', env('UPLOAD_TOKEN', ''));   // set in .env; empty = uploads disabled
+const UPLOAD_DIR    = __DIR__ . '/../uploads';
+const UPLOAD_MAX_MB = 8;                           // per image
 
 // ---- CORS (Vite dev server). Tighten for production. ----
 $allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
@@ -19,8 +47,8 @@ if (in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: $origin");
     header('Vary: Origin');
 }
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-Upload-Token');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Content-Type: application/json; charset=utf-8');
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {

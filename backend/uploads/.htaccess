@@ -1,0 +1,6 @@
+# Uploaded files must never run as code, and the folder must not be browsable.
+Options -Indexes
+
+<FilesMatch "\.(php|phtml|php3|php4|php5|phps|phar)$">
+    Require all denied
+</FilesMatch>

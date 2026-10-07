@@ -11,6 +11,7 @@ import Stream from "./pages/Stream";
 import Landing from "./pages/Landing";
 import Search from "./pages/Search";
 import Post from "./pages/Post";
+import PostList from "./pages/PostList";
 import PageLoader from "./components/ui/PageLoader";
 
 export default function App() {
@@ -31,6 +32,8 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/stream" element={<Stream />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/category/:slug" element={<PostList />} />
+            <Route path="/archive/:month" element={<PostList />} />
             <Route path="/:slug" element={<Post />} />
           </Routes>
         </PageLoader>
