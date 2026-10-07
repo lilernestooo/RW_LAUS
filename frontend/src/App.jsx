@@ -11,7 +11,7 @@ import Stream from "./pages/Stream";
 import Landing from "./pages/Landing";
 import Search from "./pages/Search";
 import Post from "./pages/Post";
-import PostList from "./pages/PostList";
+import PostList from "./pages/Postlist";
 import PageLoader from "./components/ui/PageLoader";
 
 export default function App() {
