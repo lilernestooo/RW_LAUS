@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
+import { fetchAbout } from "../api/api";
 
 const intro = [
   "Since 1995, RW 95.1 FM, a flagship station of Radioworld Broadcasting Corporation under the LausGroup of Companies, is broadcasting from Dau, Mabalacat, Pampanga. Our legacy of three decades is built on delivering cutting-edge news and timeless music, seamlessly blending the classic hits of the 60s, 70s, and 80s with today’s chart-toppers.",
@@ -23,8 +24,55 @@ const entertainment = [
   "RW 95.1 FM continuously strives to be the most listed to FM radio station in the entire region.",
 ];
 
-const djs = ["DJ Tyra", "DJ Alex", "DJ Ellie", "DJ Kian", "DJ Gio", "DJ Don Marco"];
-const anchors = ["Perry Pangan", "Boy Santiago", "Albert Lacanlale"];
+// Offline fallback, used only if the API can't be reached
+const djs = ["DJ Tyra", "DJ Alex", "DJ Ellie", "DJ Kian", "DJ Gio", "DJ Don Marco"].map((name) => ({ name }));
+const anchors = ["Perry Pangan", "Boy Santiago", "Albert Lacanlale"].map((name) => ({ name }));
+
+// about.php now returns full photo URLs (built by image_url() in config.php)
+const photoSrc = (url) => url || null;
+
+// Loads DJs, anchors, programs, milestones and the banner from db_rw (about_tbl).
+// Re-checks every 30 seconds and when you come back to the tab, and only
+// updates the page when something actually changed.
+function useAbout(intervalMs = 30000) {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    let last = "";
+
+    const load = () =>
+      fetchAbout()
+        .then((j) => {
+          if (!alive || !j.data) return;
+          const sig = JSON.stringify(j.data);
+          if (sig !== last) {
+            last = sig;
+            setData(j.data);
+          }
+        })
+        .catch(() => {}); // keep what is already on screen
+
+    load();
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, intervalMs);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", load);
+
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", load);
+    };
+  }, [intervalMs]);
+
+  return data;
+}
 
 // Returns [ref, shown]: shown flips to true once the element scrolls into view
 function useReveal(threshold = 0.15) {
@@ -111,37 +159,96 @@ function GrowRule({ className = "" }) {
   );
 }
 
-function PersonCard({ name, index }) {
+function PersonCard({ person, index }) {
+  const initials = person.name
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("");
+  const src = photoSrc(person.photo_url);
+
   return (
     // Outer wrapper: entrance. Inner card: hover (kept separate so transforms don't fight)
     <Reveal from="zoom" delay={(index % 3) * 130}>
       <div className="group cursor-pointer">
         <div className="relative overflow-hidden transition-all duration-500 group-hover:-translate-y-2">
-          {/* Placeholder - swap for <img src={...} className="..."/> when you have the photo */}
-          <div className="flex aspect-square w-full items-center justify-center bg-neutral-900 text-xs text-neutral-500 transition-transform duration-700 group-hover:scale-110">
-            Image placeholder
-          </div>
+          {src ? (
+            <img
+              src={src}
+              alt={person.name}
+              loading="lazy"
+              className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+          ) : (
+            <div className="flex aspect-square w-full items-center justify-center bg-neutral-900 text-5xl font-bold text-neutral-600 transition-transform duration-700 group-hover:scale-110">
+              {initials}
+            </div>
+          )}
 
           {/* Shine sweep */}
           <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-[900ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
 
           {/* Red bar along the bottom edge */}
           <span className="absolute bottom-0 left-0 h-1 w-0 bg-[#e60000] transition-all duration-500 ease-out group-hover:w-full" />
+
+          {/* Show / schedule slides up on hover */}
+          {(person.show_name || person.schedule) && (
+            <div className="absolute inset-x-0 bottom-0 translate-y-full bg-black/80 p-3 text-center text-sm text-white transition-transform duration-500 group-hover:translate-y-0">
+              {person.show_name && <p className="font-semibold">{person.show_name}</p>}
+              {person.schedule && <p className="text-neutral-300">{person.schedule}</p>}
+            </div>
+          )}
         </div>
 
-        <h3 className="my-5 text-center text-xl font-bold uppercase text-white transition-all duration-300 group-hover:tracking-wider group-hover:text-red-500">
-          {name}
+        <h3 className="mt-5 text-center text-xl font-bold uppercase text-white transition-all duration-300 group-hover:tracking-wider group-hover:text-red-500">
+          {person.name}
         </h3>
+        {person.role ? (
+          <p className="mb-5 text-center text-sm text-neutral-400">{person.role}</p>
+        ) : (
+          <div className="mb-5" />
+        )}
       </div>
     </Reveal>
   );
 }
 
-function PersonGrid({ names }) {
+function PersonGrid({ people }) {
   return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
-      {names.map((name, i) => (
-        <PersonCard key={name} name={name} index={i} />
+    <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+      {people.map((p, i) => (
+        <PersonCard key={p.id ?? p.name} person={p} index={i} />
+      ))}
+    </div>
+  );
+}
+
+// Vertical awards / milestones timeline
+function Timeline({ items }) {
+  return (
+    <ol className="relative ml-3 border-l-2 border-[#e60000]/70">
+      {items.map((m, i) => (
+        <Reveal as="li" from="left" delay={i * 80} key={m.id} className="mb-8 ml-6">
+          <span className="absolute -left-[9px] mt-1.5 h-4 w-4 rounded-full border-2 border-[#e60000] bg-black" />
+          <p className="text-2xl font-bold text-[#e60000]">{m.year}</p>
+          <h3 className="font-bold text-white">{m.title}</h3>
+          {m.description && <p className="text-sm text-neutral-300">{m.description}</p>}
+        </Reveal>
+      ))}
+    </ol>
+  );
+}
+
+function ProgramChips({ items }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((p) => (
+        <span
+          key={p.id}
+          className="border border-white/30 px-3 py-1 text-sm text-white transition-colors duration-300 hover:border-[#e60000] hover:bg-[#e60000]"
+        >
+          {p.name}
+        </span>
       ))}
     </div>
   );
@@ -149,6 +256,14 @@ function PersonGrid({ names }) {
 
 export default function About() {
   const [showTop, setShowTop] = useState(false);
+
+  const about = useAbout();
+  const djList = about ? about.people.filter((p) => p.kind === "dj") : djs;
+  const anchorList = about ? about.people.filter((p) => p.kind === "anchor") : anchors;
+  const newsPrograms = about ? about.programs.filter((p) => p.category === "news") : [];
+  const musicPrograms = about ? about.programs.filter((p) => p.category === "entertainment") : [];
+  const milestones = about ? about.milestones : [];
+  const banner = about?.banner;
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400);
@@ -172,13 +287,19 @@ export default function About() {
             <h1 className="mb-6 text-3xl font-bold text-white">About Us</h1>
           </Reveal>
 
-          {/* Golden Dove image placeholder */}
+          {/* Golden Dove banner (from the admin, falls back to a placeholder) */}
           <Reveal from="zoom" delay={100}>
-            <div className="group relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden border-2 border-dashed border-amber-700/60 bg-neutral-900 text-neutral-500">
-              <span className="transition-transform duration-700 group-hover:scale-105">
-                Golden Dove image (Multi-Award Winning Best Provincial FM Station)
-              </span>
-            </div>
+            {banner ? (
+              <img
+                src={photoSrc(banner.photo_url)}
+                alt={banner.caption || "RW 95.1 FM"}
+                className="aspect-[16/10] w-full object-cover"
+              />
+            ) : (
+              <div className="flex aspect-[16/10] w-full items-center justify-center border-2 border-dashed border-amber-700/60 bg-neutral-900 text-neutral-500">
+                Golden Dove image
+              </div>
+            )}
           </Reveal>
 
           <div className="mt-6 space-y-4 text-justify text-[15px] leading-relaxed text-white">
@@ -196,6 +317,11 @@ export default function About() {
               Our news and public affairs program
             </Reveal>
             <Reveal as="p">{newsProgram}</Reveal>
+            {newsPrograms.length > 0 && (
+              <Reveal>
+                <ProgramChips items={newsPrograms} />
+              </Reveal>
+            )}
 
             <Reveal as="h4" from="left" className="border-l-4 border-[#e60000] pl-3 font-bold uppercase">
               Entertainment
@@ -205,17 +331,22 @@ export default function About() {
                 {p}
               </Reveal>
             ))}
+            {musicPrograms.length > 0 && (
+              <Reveal>
+                <ProgramChips items={musicPrograms} />
+              </Reveal>
+            )}
           </div>
 
           <GrowRule className="mb-12 mt-14" />
 
           <SectionHeading>OUR DJs</SectionHeading>
-          <PersonGrid names={djs} />
+          <PersonGrid people={djList} />
 
           <GrowRule className="my-8" />
 
           <SectionHeading className="uppercase">News and Public Affairs Anchors</SectionHeading>
-          <PersonGrid names={anchors} />
+          <PersonGrid people={anchorList} />
         </section>
 
         {/* Sticky sidebar */}
