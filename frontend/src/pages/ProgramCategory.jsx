@@ -46,27 +46,56 @@ export default function ProgramCategory() {
   const [state, setState] = useState("loading"); // loading | ready | missing | error
   const [showTop, setShowTop] = useState(false);
 
-  // Load this category and its programs from the database
+  // Load this category and its programs from the database.
+  // Re-checked every 10 seconds and when you return to the tab,
+  // so changes made on the admin page appear without a reload.
   useEffect(() => {
     let alive = true;
+    let last = "";
     setState("loading");
     setCategory(null);
-    fetchPrograms(slug)
-      .then((json) => {
-        if (!alive) return;
-        const found = json.data?.categories?.[0];
-        if (found) {
-          setCategory(found);
+
+    const load = (first) => {
+      fetchPrograms(slug)
+        .then((json) => {
+          if (!alive) return;
+          const found = json.data?.categories?.[0];
+          if (!found) {
+            last = "";
+            setCategory(null);
+            setState("missing");
+            return;
+          }
+          const snapshot = JSON.stringify(found);
+          if (snapshot !== last) { // only redraw when something changed
+            last = snapshot;
+            setCategory(found);
+          }
           setState("ready");
-        } else {
-          setState("missing");
-        }
-      })
-      .catch((err) => {
-        if (alive) setState(err.status === 404 ? "missing" : "error");
-      });
+        })
+        .catch((err) => {
+          if (!alive) return;
+          if (err.status === 404) {
+            last = "";
+            setCategory(null);
+            setState("missing");
+          } else if (first) {
+            setState("error"); // later failures keep what is on screen
+          }
+        });
+    };
+
+    const refresh = () => { if (!document.hidden) load(false); };
+
+    load(true);
+    const timer = setInterval(refresh, 10000);
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
     return () => {
       alive = false;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
     };
   }, [slug]);
 
