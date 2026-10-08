@@ -110,18 +110,39 @@ export default function Programs() {
   const [showTop, setShowTop] = useState(false);
   const [cards, setCards] = useState(fallback);
 
-  // Card titles and backgrounds come from the database
+  // Card titles and backgrounds come from the database.
+  // Re-checked every 10 seconds and when you return to the tab,
+  // so changes made on the admin page appear without a reload.
   useEffect(() => {
     let alive = true;
-    fetchPrograms()
-      .then((json) => {
-        const list = json.data?.categories ?? [];
-        if (alive && list.length) {
-          setCards(list.map((c) => ({ title: c.title, to: `/programs/${c.slug}`, background: c.background })));
-        }
-      })
-      .catch(() => {});
-    return () => { alive = false; };
+    let last = "";
+
+    const load = () => {
+      fetchPrograms()
+        .then((json) => {
+          const list = json.data?.categories ?? [];
+          if (!alive || !list.length) return;
+          const next = list.map((c) => ({ title: c.title, to: `/programs/${c.slug}`, background: c.background }));
+          const snapshot = JSON.stringify(next);
+          if (snapshot === last) return; // nothing changed
+          last = snapshot;
+          setCards(next);
+        })
+        .catch(() => {}); // keep what is on screen
+    };
+
+    const refresh = () => { if (!document.hidden) load(); };
+
+    load();
+    const timer = setInterval(refresh, 10000);
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
 
   useEffect(() => {
