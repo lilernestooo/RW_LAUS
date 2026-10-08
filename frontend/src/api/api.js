@@ -28,3 +28,10 @@ export const fetchArchives = () => get("categories.php", { archives: 1 });
 
 // -> { data: { hero: url|null, video: url|null, awards: [{ id, url, caption }] } }
 export const fetchHome = () => get("home.php");
+
+// -> { data: { people: [...], milestones: [...], programs: [...], banner: {...}|null } }
+export const fetchAbout = () => get("about.php");
+
+// -> { data: { categories: [{ id, slug, title, background, programs: [...] }] } }
+// Pass a slug to get only that category.
+export const fetchPrograms = (category) => get("programs.php", { category });

@@ -15,7 +15,7 @@
   input.empty { border-color: #e60000; }
   button { padding: .6rem 1.2rem; background: #e60000; color: #fff; border: 0; cursor: pointer; font-weight: 700; }
   button:disabled { opacity: .5; cursor: wait; }
-  .tabs { display: flex; gap: .5rem; margin: 1.2rem 0 0; }
+  .tabs { display: flex; gap: .5rem; margin: 1.2rem 0 0; flex-wrap: wrap; }
   .tabs button { background: #222; border: 1px solid #444; }
   .tabs button.on { background: #e60000; border-color: #e60000; }
   .status { margin: .6rem 0; white-space: pre-wrap; min-height: 1.2em; }
@@ -47,6 +47,8 @@
   <button type="button" id="tabPostBtn" class="on">One post: date and photos</button>
   <button type="button" id="tabDatesBtn">All post dates</button>
   <button type="button" id="tabHomeBtn">Homepage</button>
+  <button type="button" id="tabAboutBtn">About page</button>
+  <button type="button" id="tabProgramsBtn">Programs page</button>
 </div>
 
 <!-- ============ TAB 1: one post ============ -->
@@ -121,6 +123,89 @@
     <button id="removeVideo" type="button" class="plain" hidden>Remove</button>
   </p>
   <div id="videoStatus" class="status"></div>
+</section>
+
+<!-- ============ TAB 4: about page ============ -->
+<section id="tabAbout" hidden>
+  <h2>About page banner image</h2>
+  <p class="hint">The big picture at the top of About Us (the Golden Dove photo). Uploading a new one replaces it.</p>
+  <img id="bannerNow" alt="" hidden style="max-width:360px;width:100%;display:block;margin:.4rem 0">
+  <label for="bannerCaption">Alt text (optional)</label>
+  <input id="bannerCaption" type="text" maxlength="160" placeholder="Golden Dove Best Provincial FM Station">
+  <label for="bannerFile">Photo</label>
+  <input id="bannerFile" type="file" accept="image/*">
+  <p>
+    <button id="saveBanner" type="button">Upload banner</button>
+    <button id="removeBanner" type="button" class="plain" hidden>Remove</button>
+  </p>
+  <div id="bannerStatus" class="status"></div>
+
+  <h2>Add a DJ or anchor</h2>
+  <label for="pKind">Type</label>
+  <select id="pKind"><option value="dj">DJ</option><option value="anchor">News anchor</option></select>
+  <label for="pName">Name</label>
+  <input id="pName" type="text" maxlength="120">
+  <label for="pRole">Title (optional, e.g. Morning Host)</label>
+  <input id="pRole" type="text" maxlength="160">
+  <label for="pShow">Show (optional)</label>
+  <input id="pShow" type="text" maxlength="160">
+  <label for="pSched">Schedule (optional, e.g. Mon–Fri, 2–6 PM)</label>
+  <input id="pSched" type="text" maxlength="160">
+  <label for="pPhoto">Photo (optional, JPG, PNG or WEBP, up to 8 MB)</label>
+  <input id="pPhoto" type="file" accept="image/*">
+  <p><button id="addPerson" type="button">Add person</button></p>
+  <div id="personStatus" class="status"></div>
+  <div id="peopleList"></div>
+
+  <h2>Our Journey (awards and milestones)</h2>
+  <div class="row">
+    <input id="mYear" type="text" placeholder="Year" maxlength="4" style="width:6rem">
+    <input id="mTitle" type="text" placeholder="Title" maxlength="160">
+  </div>
+  <label for="mDesc">Description (optional)</label>
+  <input id="mDesc" type="text" maxlength="500">
+  <p><button id="addMilestone" type="button">Add milestone</button></p>
+  <div id="milestoneStatus" class="status"></div>
+  <div id="milestoneList"></div>
+
+  <h2>Programs</h2>
+  <div class="row">
+    <select id="prCat" style="width:auto">
+      <option value="news">News and public affairs</option>
+      <option value="entertainment">Entertainment</option>
+    </select>
+    <input id="prName" type="text" placeholder="Program name" maxlength="120">
+    <button id="addProgram" type="button">Add</button>
+  </div>
+  <div id="programStatus" class="status"></div>
+  <div id="programList"></div>
+</section>
+
+<!-- ============ TAB 5: programs page ============ -->
+<section id="tabPrograms" hidden>
+  <h2>Card backgrounds</h2>
+  <p class="hint">The picture behind the "Regular Programming" and "News &amp; Public Affairs" cards on the Programs page. Uploading a new one replaces it.</p>
+  <div id="prgBgList"></div>
+  <div id="prgBgStatus" class="status"></div>
+
+  <h2>Add a program</h2>
+  <label for="prgCat">Category</label>
+  <select id="prgCat"></select>
+  <label for="prgTitle">Program name (e.g. Sunny Side Up)</label>
+  <input id="prgTitle" type="text" maxlength="160">
+  <label for="prgHost">Host (e.g. DJ Don Marco). The site shows "Program name hosted by Host".</label>
+  <input id="prgHost" type="text" maxlength="160">
+  <label for="prgSched">Schedule (e.g. Mondays, Tuesdays, Thursdays and Fridays, 5:00 AM – 9:00 AM)</label>
+  <input id="prgSched" type="text" maxlength="255">
+  <label for="prgDesc">Description</label>
+  <textarea id="prgDesc" maxlength="2000" style="width:100%;box-sizing:border-box;min-height:5rem;padding:.6rem;background:#222;color:#eee;border:1px solid #444;font:inherit"></textarea>
+  <label for="prgImage">Image (optional, JPG, PNG or WEBP, up to 8 MB)</label>
+  <input id="prgImage" type="file" accept="image/*">
+  <label for="prgAudio">Audio (optional, MP3, M4A, OGG or WAV, up to 25 MB)</label>
+  <input id="prgAudio" type="file" accept="audio/*">
+  <p><button id="addProg" type="button">Add program</button></p>
+  <div id="prgStatus" class="status"></div>
+  <div id="prgList"></div>
 </section>
 
 <script>
@@ -454,18 +539,492 @@ $("saveVideo").onclick = async () => {
 $("removeVideo").onclick = () =>
   confirm("Remove the video?") && homeAction({ action: "delete", id: $("removeVideo").dataset.id }, "videoStatus", "Removed.");
 
+// ---------- About page (DJs, anchors, milestones, programs) ----------
+async function aboutPost(fields, statusId, okMsg) {
+  if (needPassword(statusId)) return false;
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) if (v !== null && v !== undefined) fd.append(k, v);
+  try {
+    const res = await fetch(`${API}/about.php`, { method: "POST", headers: authHeaders(), body: fd });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch { say(statusId, "Server sent an error:\n" + text.replace(/<[^>]*>/g, "").trim().slice(0, 400)); return false; }
+    say(statusId, res.ok ? okMsg : json.error || "Unknown error");
+    if (res.ok) await loadAbout();
+    return res.ok;
+  } catch (e) {
+    say(statusId, "Network error: " + e.message);
+    return false;
+  }
+}
+
+function listRow(text, onDelete) {
+  const row = document.createElement("div");
+  row.className = "award";
+  const label = document.createElement("span");
+  label.style.flex = "1";
+  label.textContent = text;
+  const del = document.createElement("button");
+  del.type = "button";
+  del.textContent = "✕";
+  del.title = "Delete";
+  del.onclick = () => confirm("Delete this?") && onDelete();
+  row.append(label, del);
+  return row;
+}
+
+// Small inline form to change a person's details and photo
+function personEditor(p) {
+  const box = document.createElement("div");
+  box.style.cssText = "border:1px solid #333;padding:.8rem;margin:.4rem 0 1rem";
+
+  const field = (label, value, max) => {
+    const l = document.createElement("label");
+    l.textContent = label;
+    const i = document.createElement("input");
+    i.type = "text";
+    i.maxLength = max;
+    i.value = value || "";
+    box.append(l, i);
+    return i;
+  };
+
+  const name  = field("Name", p.name, 120);
+  const role  = field("Title (e.g. Morning Host)", p.role, 160);
+  const show  = field("Show", p.show_name, 160);
+  const sched = field("Schedule (e.g. Mon–Fri, 2–6 PM)", p.schedule, 160);
+
+  const fl = document.createElement("label");
+  fl.textContent = "Photo (leave empty to keep the current one)";
+  const file = document.createElement("input");
+  file.type = "file";
+  file.accept = "image/*";
+  box.append(fl, file);
+
+  const save = document.createElement("button");
+  save.type = "button";
+  save.textContent = "Save changes";
+  save.style.marginTop = "1rem";
+  save.onclick = () => {
+    if (!name.value.trim()) return say("personStatus", "Name is required.");
+    aboutPost({
+      action: "update_person",
+      id: p.id,
+      name: name.value,
+      role: role.value,
+      show_name: show.value,
+      schedule: sched.value,
+      photo: file.files[0] || null,
+    }, "personStatus", "Saved.");
+  };
+  box.appendChild(save);
+  return box;
+}
+
+// Swap two people inside one group (DJs or anchors) and save the new order
+function movePerson(kind, group, from, to) {
+  const ids = group.map((p) => p.id);
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  return aboutPost({ action: "reorder_people", kind, ids: ids.join(",") }, "personStatus", "Order saved.");
+}
+
+async function loadAbout() {
+  const res = await fetch(`${API}/about.php`);
+  const json = await res.json();
+  const data = json.data;
+  if (!data) return;
+
+  const b = data.banner;
+  $("bannerNow").hidden = !b;
+  if (b) $("bannerNow").src = b.photo_url;
+  $("removeBanner").hidden = !b;
+
+  const pl = $("peopleList");
+  pl.replaceChildren();
+  for (const kind of ["dj", "anchor"]) {
+    const group = data.people.filter((p) => p.kind === kind);
+
+    const heading = document.createElement("h3");
+    heading.textContent = (kind === "dj" ? "DJs" : "News anchors") + " (top = shown first on the site)";
+    heading.style.cssText = "font-size:.95rem;margin:1.4rem 0 .2rem;color:#aaa";
+    pl.appendChild(heading);
+
+    group.forEach((p, idx) => {
+      const wrap = document.createElement("div");
+      const row = listRow(
+        `${p.name}${p.show_name ? " — " + p.show_name : ""}`,
+        () => aboutPost({ action: "delete_person", id: p.id }, "personStatus", "Deleted.")
+      );
+      if (p.photo_url) {
+        const i = document.createElement("img");
+        i.src = p.photo_url;
+        i.style.width = "60px";
+        row.prepend(i);
+      }
+
+      const panel = personEditor(p);
+      panel.hidden = true;
+
+      const btn = (text, title, disabled, onClick) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "plain";
+        b.textContent = text;
+        b.title = title;
+        b.disabled = disabled;
+        b.onclick = onClick;
+        return b;
+      };
+
+      const edit = btn(p.photo_url ? "Edit" : "Add photo", "Edit details and photo", false,
+        () => { panel.hidden = !panel.hidden; });
+      const up   = btn("▲", "Move up",   idx === 0,                 () => movePerson(kind, group, idx, idx - 1));
+      const down = btn("▼", "Move down", idx === group.length - 1,  () => movePerson(kind, group, idx, idx + 1));
+
+      row.insertBefore(edit, row.lastChild);   // order: Edit, ▲, ▼, ✕
+      row.insertBefore(up, row.lastChild);
+      row.insertBefore(down, row.lastChild);
+
+      wrap.append(row, panel);
+      pl.appendChild(wrap);
+    });
+  }
+
+  const ml = $("milestoneList");
+  ml.replaceChildren();
+  for (const m of data.milestones) {
+    ml.appendChild(listRow(`${m.year} — ${m.title}`,
+      () => aboutPost({ action: "delete_milestone", id: m.id }, "milestoneStatus", "Deleted.")));
+  }
+
+  const gl = $("programList");
+  gl.replaceChildren();
+  for (const g of data.programs) {
+    gl.appendChild(listRow(`[${g.category}] ${g.name}`,
+      () => aboutPost({ action: "delete_program", id: g.id }, "programStatus", "Deleted.")));
+  }
+}
+
+$("addPerson").onclick = async () => {
+  if (!$("pName").value.trim()) return say("personStatus", "Enter a name.");
+  const ok = await aboutPost({
+    action: "add_person",
+    kind: $("pKind").value,
+    name: $("pName").value,
+    role: $("pRole").value,
+    show_name: $("pShow").value,
+    schedule: $("pSched").value,
+    photo: $("pPhoto").files[0] || null,
+  }, "personStatus", "Added.");
+  if (ok) {
+    ["pName", "pRole", "pShow", "pSched"].forEach((id) => { $(id).value = ""; });
+    $("pPhoto").value = "";
+  }
+};
+
+$("addMilestone").onclick = async () => {
+  const ok = await aboutPost({
+    action: "add_milestone",
+    year: $("mYear").value,
+    title: $("mTitle").value,
+    description: $("mDesc").value,
+  }, "milestoneStatus", "Added.");
+  if (ok) ["mYear", "mTitle", "mDesc"].forEach((id) => { $(id).value = ""; });
+};
+
+$("addProgram").onclick = async () => {
+  const ok = await aboutPost({
+    action: "add_program",
+    category: $("prCat").value,
+    name: $("prName").value,
+  }, "programStatus", "Added.");
+  if (ok) $("prName").value = "";
+};
+
+$("saveBanner").onclick = async () => {
+  const file = $("bannerFile").files[0];
+  if (!file) return say("bannerStatus", "Choose a photo first.");
+  const ok = await aboutPost({ action: "set_banner", caption: $("bannerCaption").value, photo: file }, "bannerStatus", "Banner updated.");
+  if (ok) { $("bannerFile").value = ""; $("bannerCaption").value = ""; }
+};
+$("removeBanner").onclick = () =>
+  confirm("Remove the banner image?") && aboutPost({ action: "delete_banner" }, "bannerStatus", "Removed.");
+
+// ---------- Programs page (card backgrounds and programs) ----------
+async function progPost(fields, statusId, okMsg) {
+  if (needPassword(statusId)) return false;
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) if (v !== null && v !== undefined) fd.append(k, v);
+  try {
+    const res = await fetch(`${API}/programs.php`, { method: "POST", headers: authHeaders(), body: fd });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch { say(statusId, "Server sent an error:\n" + text.replace(/<[^>]*>/g, "").trim().slice(0, 400)); return false; }
+    say(statusId, res.ok ? okMsg : json.error || "Unknown error");
+    if (res.ok) await loadPrograms();
+    return res.ok;
+  } catch (e) {
+    say(statusId, "Network error: " + e.message);
+    return false;
+  }
+}
+
+// Small inline form to change a program's details, image and audio
+function progEditor(p) {
+  const box = document.createElement("div");
+  box.style.cssText = "border:1px solid #333;padding:.8rem;margin:.4rem 0 1rem";
+
+  const text = (label, value, max) => {
+    const l = document.createElement("label");
+    l.textContent = label;
+    const i = document.createElement("input");
+    i.type = "text";
+    i.maxLength = max;
+    i.value = value || "";
+    box.append(l, i);
+    return i;
+  };
+
+  const title = text("Program name", p.title, 160);
+  const host  = text("Host (e.g. DJ Don Marco)", p.host, 160);
+  const sched = text("Schedule", p.schedule, 255);
+
+  const dl = document.createElement("label");
+  dl.textContent = "Description";
+  const desc = document.createElement("textarea");
+  desc.maxLength = 2000;
+  desc.value = p.description || "";
+  desc.style.cssText = "width:100%;box-sizing:border-box;min-height:5rem;padding:.6rem;background:#222;color:#eee;border:1px solid #444;font:inherit";
+  box.append(dl, desc);
+
+  const fileField = (label, accept, current, removeText) => {
+    const l = document.createElement("label");
+    l.textContent = label;
+    const file = document.createElement("input");
+    file.type = "file";
+    file.accept = accept;
+    box.append(l, file);
+    let remove = null;
+    if (current) {
+      const r = document.createElement("label");
+      r.style.fontWeight = "400";
+      remove = document.createElement("input");
+      remove.type = "checkbox";
+      r.append(remove, " " + removeText);
+      box.appendChild(r);
+    }
+    return { file, remove };
+  };
+
+  const img = fileField("Image (leave empty to keep the current one)", "image/*", p.image, "Remove the current image");
+  const aud = fileField("Audio (leave empty to keep the current one)", "audio/*", p.audio, "Remove the current audio");
+
+  if (p.audio) {
+    const player = document.createElement("audio");
+    player.controls = true;
+    player.preload = "none";
+    player.src = p.audio;
+    player.style.cssText = "display:block;margin-top:.6rem;width:100%";
+    box.appendChild(player);
+  }
+
+  const save = document.createElement("button");
+  save.type = "button";
+  save.textContent = "Save changes";
+  save.style.marginTop = "1rem";
+  save.onclick = () => {
+    if (!title.value.trim()) return say("prgStatus", "Program name is required.");
+    say("prgStatus", "Saving… audio files take a while.");
+    progPost({
+      action: "update_program",
+      id: p.id,
+      title: title.value,
+      host: host.value,
+      schedule: sched.value,
+      description: desc.value,
+      image: img.file.files[0] || null,
+      audio: aud.file.files[0] || null,
+      remove_image: img.remove && img.remove.checked ? "1" : null,
+      remove_audio: aud.remove && aud.remove.checked ? "1" : null,
+    }, "prgStatus", "Saved.");
+  };
+  box.appendChild(save);
+  return box;
+}
+
+// Swap two programs inside one category and save the new order
+function moveProgram(group, from, to) {
+  const ids = group.map((p) => p.id);
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  return progPost({ action: "reorder", ids: ids.join(",") }, "prgStatus", "Order saved.");
+}
+
+async function loadPrograms() {
+  const res = await fetch(`${API}/programs.php`);
+  const json = await res.json();
+  if (!json.data) return say("prgBgStatus", json.error || "Could not load programs.");
+  const cats = json.data.categories;
+
+  // Category dropdown for the add form
+  const sel = $("prgCat");
+  const keep = sel.value;
+  sel.replaceChildren();
+  for (const c of cats) {
+    const o = document.createElement("option");
+    o.value = c.slug;
+    o.textContent = c.title;
+    sel.appendChild(o);
+  }
+  if (cats.some((c) => c.slug === keep)) sel.value = keep;
+
+  // Card backgrounds
+  const bg = $("prgBgList");
+  bg.replaceChildren();
+  for (const c of cats) {
+    const wrap = document.createElement("div");
+    wrap.style.margin = "1rem 0";
+
+    const h = document.createElement("h3");
+    h.textContent = c.title;
+    h.style.cssText = "font-size:.95rem;margin:1rem 0 .2rem;color:#aaa";
+    wrap.appendChild(h);
+
+    if (c.background) {
+      const pic = document.createElement("img");
+      pic.src = c.background;
+      pic.style.cssText = "max-width:360px;width:100%;display:block;margin:.4rem 0";
+      wrap.appendChild(pic);
+    } else {
+      const none = document.createElement("p");
+      none.className = "hint";
+      none.textContent = "No background yet. The dark placeholder shows on the card.";
+      wrap.appendChild(none);
+    }
+
+    const file = document.createElement("input");
+    file.type = "file";
+    file.accept = "image/*";
+    const up = document.createElement("button");
+    up.type = "button";
+    up.textContent = "Upload background";
+    up.style.marginTop = ".6rem";
+    up.onclick = () => {
+      if (!file.files[0]) return say("prgBgStatus", "Choose a photo first.");
+      progPost({ action: "set_background", category: c.slug, photo: file.files[0] }, "prgBgStatus", "Background updated.");
+    };
+    wrap.append(file, up);
+
+    if (c.background) {
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "plain";
+      rm.textContent = "Remove";
+      rm.style.cssText = "margin:.6rem 0 0 .6rem";
+      rm.onclick = () => confirm("Remove this background?") &&
+        progPost({ action: "delete_background", category: c.slug }, "prgBgStatus", "Removed.");
+      wrap.appendChild(rm);
+    }
+    bg.appendChild(wrap);
+  }
+
+  // Programs in each category
+  const list = $("prgList");
+  list.replaceChildren();
+  for (const c of cats) {
+    const heading = document.createElement("h3");
+    heading.textContent = c.title + " (top = shown first on the site)";
+    heading.style.cssText = "font-size:.95rem;margin:1.4rem 0 .2rem;color:#aaa";
+    list.appendChild(heading);
+
+    if (!c.programs.length) {
+      const none = document.createElement("p");
+      none.className = "hint";
+      none.textContent = "No programs yet.";
+      list.appendChild(none);
+      continue;
+    }
+
+    c.programs.forEach((p, idx) => {
+      const wrap = document.createElement("div");
+      const row = listRow(
+        `${p.title}${p.host ? " — " + p.host : ""}${p.audio ? " 🔊" : ""}`,
+        () => progPost({ action: "delete_program", id: p.id }, "prgStatus", "Deleted.")
+      );
+      if (p.image) {
+        const i = document.createElement("img");
+        i.src = p.image;
+        i.style.width = "60px";
+        row.prepend(i);
+      }
+
+      const panel = progEditor(p);
+      panel.hidden = true;
+
+      const btn = (label, title, disabled, onClick) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "plain";
+        b.textContent = label;
+        b.title = title;
+        b.disabled = disabled;
+        b.onclick = onClick;
+        return b;
+      };
+
+      const edit = btn("Edit", "Edit details, image and audio", false, () => { panel.hidden = !panel.hidden; });
+      const up   = btn("▲", "Move up",   idx === 0,                    () => moveProgram(c.programs, idx, idx - 1));
+      const down = btn("▼", "Move down", idx === c.programs.length - 1, () => moveProgram(c.programs, idx, idx + 1));
+
+      row.insertBefore(edit, row.lastChild);   // order: Edit, ▲, ▼, ✕
+      row.insertBefore(up, row.lastChild);
+      row.insertBefore(down, row.lastChild);
+
+      wrap.append(row, panel);
+      list.appendChild(wrap);
+    });
+  }
+}
+
+$("addProg").onclick = async () => {
+  if (!$("prgTitle").value.trim()) return say("prgStatus", "Enter the program name.");
+  say("prgStatus", "Uploading… audio files take a while.");
+  const ok = await progPost({
+    action: "add_program",
+    category: $("prgCat").value,
+    title: $("prgTitle").value,
+    host: $("prgHost").value,
+    schedule: $("prgSched").value,
+    description: $("prgDesc").value,
+    image: $("prgImage").files[0] || null,
+    audio: $("prgAudio").files[0] || null,
+  }, "prgStatus", "Added.");
+  if (ok) {
+    ["prgTitle", "prgHost", "prgSched", "prgDesc"].forEach((id) => { $(id).value = ""; });
+    $("prgImage").value = "";
+    $("prgAudio").value = "";
+  }
+};
+
 // ---------- Tabs ----------
 function openTab(name) {
   $("tabPost").hidden = name !== "post";
   $("tabDates").hidden = name !== "dates";
   $("tabHome").hidden = name !== "home";
+  $("tabAbout").hidden = name !== "about";
+  $("tabPrograms").hidden = name !== "programs";
   $("tabPostBtn").classList.toggle("on", name === "post");
   $("tabDatesBtn").classList.toggle("on", name === "dates");
   $("tabHomeBtn").classList.toggle("on", name === "home");
+  $("tabAboutBtn").classList.toggle("on", name === "about");
+  $("tabProgramsBtn").classList.toggle("on", name === "programs");
 }
 $("tabPostBtn").onclick = () => openTab("post");
 $("tabDatesBtn").onclick = () => openTab("dates");
 $("tabHomeBtn").onclick = () => { openTab("home"); loadHome(); };
+$("tabAboutBtn").onclick = () => { openTab("about"); loadAbout(); };
+$("tabProgramsBtn").onclick = () => { openTab("programs"); loadPrograms(); };
 
 $("post").onchange = showPost;
 loadPosts();
