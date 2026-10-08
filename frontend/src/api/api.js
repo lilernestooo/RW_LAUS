@@ -25,3 +25,6 @@ export const fetchCategories = () => get("categories.php");
 
 // -> { data: [{ value: "2026-09", label: "September 2026" }] }
 export const fetchArchives = () => get("categories.php", { archives: 1 });
+
+// -> { data: { hero: url|null, video: url|null, awards: [{ id, url, caption }] } }
+export const fetchHome = () => get("home.php");

@@ -11,7 +11,7 @@
   p.hint { color: #aaa; margin: .2rem 0 .6rem; }
   label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
   select, input { padding: .6rem; background: #222; color: #eee; border: 1px solid #444; box-sizing: border-box; color-scheme: dark; }
-  select, input[type=password], input[type=file] { width: 100%; }
+  select, input[type=password], input[type=file], input[type=text] { width: 100%; }
   input.empty { border-color: #e60000; }
   button { padding: .6rem 1.2rem; background: #e60000; color: #fff; border: 0; cursor: pointer; font-weight: 700; }
   button:disabled { opacity: .5; cursor: wait; }
@@ -25,6 +25,11 @@
   .item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
   .item button { position: absolute; top: 4px; right: 4px; padding: .1rem .5rem; background: rgba(0,0,0,.75); }
   #featuredNow { max-width: 260px; display: block; margin-top: .4rem; }
+  #heroNow, #videoNow { max-width: 360px; width: 100%; display: block; margin: .4rem 0; background: #000; }
+  button.plain { background: #222; border: 1px solid #444; }
+  .award { display: flex; gap: .6rem; align-items: center; margin-top: .6rem; }
+  .award img { width: 110px; aspect-ratio: 4/3; object-fit: cover; flex: none; }
+  .award input { flex: 1; width: auto; }
   table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
   td { padding: .45rem .5rem; border-bottom: 1px solid #2a2a2a; vertical-align: middle; }
   td.date { width: 11rem; }
@@ -41,6 +46,7 @@
 <div class="tabs">
   <button type="button" id="tabPostBtn" class="on">One post: date and photos</button>
   <button type="button" id="tabDatesBtn">All post dates</button>
+  <button type="button" id="tabHomeBtn">Homepage</button>
 </div>
 
 <!-- ============ TAB 1: one post ============ -->
@@ -82,6 +88,39 @@
     <button id="saveAll" type="button">Save changes</button>
     <div id="allStatus" class="status"></div>
   </div>
+</section>
+
+<!-- ============ TAB 3: homepage ============ -->
+<section id="tabHome" hidden>
+  <h2>Hero image</h2>
+  <p class="hint">The big picture at the top of the homepage. Uploading a new one replaces it.</p>
+  <img id="heroNow" alt="" hidden>
+  <input id="heroFile" type="file" accept="image/*">
+  <p>
+    <button id="saveHero" type="button">Upload hero image</button>
+    <button id="removeHero" type="button" class="plain" hidden>Remove</button>
+  </p>
+  <div id="heroStatus" class="status"></div>
+
+  <h2>Award photos</h2>
+  <p class="hint">Shown in the Awards slider. You can choose many at once. The caption is optional and appears over the photo.</p>
+  <label for="awardCaption">Caption for the photos you upload now (optional)</label>
+  <input id="awardCaption" type="text" maxlength="255">
+  <label for="awardFiles">Photos</label>
+  <input id="awardFiles" type="file" accept="image/*" multiple>
+  <p><button id="saveAwards" type="button">Upload award photos</button></p>
+  <div id="awardStatus" class="status"></div>
+  <div id="awardList"></div>
+
+  <h2>Video</h2>
+  <p class="hint">MP4 or WEBM, up to 38 MB. Uploading a new one replaces it.</p>
+  <video id="videoNow" controls preload="metadata" hidden></video>
+  <input id="videoFile" type="file" accept="video/mp4,video/webm">
+  <p>
+    <button id="saveVideo" type="button">Upload video</button>
+    <button id="removeVideo" type="button" class="plain" hidden>Remove</button>
+  </p>
+  <div id="videoStatus" class="status"></div>
 </section>
 
 <script>
@@ -306,15 +345,127 @@ async function removeImage(id) {
   loadGallery();
 }
 
+// ---------- Homepage (hero, awards, video) ----------
+async function loadHome() {
+  const res = await fetch(`${API}/home.php`);
+  const json = await res.json();
+  if (!json.data) return say("heroStatus", json.error || "Could not load homepage content.");
+  const items = json.data.items;
+
+  const hero = items.find((i) => i.kind === "hero");
+  $("heroNow").hidden = !hero;
+  if (hero) $("heroNow").src = hero.url;
+  $("removeHero").hidden = !hero;
+  $("removeHero").dataset.id = hero ? hero.id : "";
+
+  const video = items.find((i) => i.kind === "video");
+  $("videoNow").hidden = !video;
+  if (video) $("videoNow").src = video.url; else $("videoNow").removeAttribute("src");
+  $("removeVideo").hidden = !video;
+  $("removeVideo").dataset.id = video ? video.id : "";
+
+  const list = $("awardList");
+  list.replaceChildren();
+  const awards = items.filter((i) => i.kind === "award");
+  if (!awards.length) { list.textContent = "No award photos yet."; return; }
+  for (const a of awards) {
+    const row = document.createElement("div");
+    row.className = "award";
+    const img = document.createElement("img");
+    img.src = a.url;
+    img.loading = "lazy";
+    const cap = document.createElement("input");
+    cap.type = "text";
+    cap.maxLength = 255;
+    cap.placeholder = "Caption (optional)";
+    cap.value = a.caption || "";
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "plain";
+    save.textContent = "Save caption";
+    save.onclick = () => homeAction({ action: "caption", id: a.id, caption: cap.value }, "awardStatus", "Caption saved.");
+    const del = document.createElement("button");
+    del.type = "button";
+    del.textContent = "✕";
+    del.title = "Delete";
+    del.onclick = () => confirm("Delete this photo?") && homeAction({ action: "delete", id: a.id }, "awardStatus", "Deleted.");
+    row.append(img, cap, save, del);
+    list.appendChild(row);
+  }
+}
+
+async function homeAction(fields, statusId, okMessage) {
+  if (needPassword(statusId)) return;
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) fd.append(k, v);
+  const res = await fetch(`${API}/home.php`, { method: "POST", headers: authHeaders(), body: fd });
+  const json = await res.json();
+  say(statusId, res.ok ? okMessage : json.error || "Unknown error");
+  await loadHome();
+}
+
+async function homeSend(kind, files, statusId, button, caption = "") {
+  if (!files.length) return say(statusId, "Choose a file first.");
+  if (needPassword(statusId)) return;
+
+  const list = kind === "award" ? files : files.slice(0, 1);
+  const batches = [];
+  for (let i = 0; i < list.length; i += BATCH) batches.push(list.slice(i, i + BATCH));
+
+  button.disabled = true;
+  let ok = 0;
+  const problems = [];
+  for (let b = 0; b < batches.length; b++) {
+    say(statusId, `Uploading ${kind === "video" ? "video (large files take a while)" : `batch ${b + 1} of ${batches.length}`}…`);
+    const fd = new FormData();
+    fd.append("kind", kind);
+    if (caption) fd.append("caption", caption);
+    batches[b].forEach((f) => fd.append("files[]", f));
+    try {
+      const res = await fetch(`${API}/home.php`, { method: "POST", headers: authHeaders(), body: fd });
+      const json = await res.json();
+      if (json.data) { ok += json.data.uploaded.length; problems.push(...json.data.errors); }
+      else problems.push(json.error || "Unknown error");
+    } catch (e) {
+      problems.push("Network error: " + e.message);
+    }
+  }
+  button.disabled = false;
+  say(statusId, `Uploaded ${ok} of ${list.length}.` + (problems.length ? "\n\nProblems:\n" + problems.join("\n") : ""));
+  await loadHome();
+}
+
+$("saveHero").onclick = async () => {
+  await homeSend("hero", [...$("heroFile").files], "heroStatus", $("saveHero"));
+  $("heroFile").value = "";
+};
+$("removeHero").onclick = () =>
+  confirm("Remove the hero image?") && homeAction({ action: "delete", id: $("removeHero").dataset.id }, "heroStatus", "Removed.");
+
+$("saveAwards").onclick = async () => {
+  await homeSend("award", [...$("awardFiles").files], "awardStatus", $("saveAwards"), $("awardCaption").value.trim());
+  $("awardFiles").value = "";
+};
+
+$("saveVideo").onclick = async () => {
+  await homeSend("video", [...$("videoFile").files], "videoStatus", $("saveVideo"));
+  $("videoFile").value = "";
+};
+$("removeVideo").onclick = () =>
+  confirm("Remove the video?") && homeAction({ action: "delete", id: $("removeVideo").dataset.id }, "videoStatus", "Removed.");
+
 // ---------- Tabs ----------
 function openTab(name) {
   $("tabPost").hidden = name !== "post";
   $("tabDates").hidden = name !== "dates";
+  $("tabHome").hidden = name !== "home";
   $("tabPostBtn").classList.toggle("on", name === "post");
   $("tabDatesBtn").classList.toggle("on", name === "dates");
+  $("tabHomeBtn").classList.toggle("on", name === "home");
 }
 $("tabPostBtn").onclick = () => openTab("post");
 $("tabDatesBtn").onclick = () => openTab("dates");
+$("tabHomeBtn").onclick = () => { openTab("home"); loadHome(); };
 
 $("post").onchange = showPost;
 loadPosts();
