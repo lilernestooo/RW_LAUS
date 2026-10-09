@@ -99,13 +99,10 @@ function NewsCard({ post }) {
             Image placeholder
           </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-red-700/0 transition-colors duration-300 group-hover:bg-red-700/20" />
 
         {/* Shine sweep */}
         <div className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-[900ms] ease-out group-hover:left-[130%] group-hover:opacity-100" />
 
-        {/* Red bar along the bottom edge */}
-        <span className="absolute bottom-0 left-0 h-1 w-0 bg-[#e60000] transition-all duration-500 ease-out group-hover:w-full" />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-1">

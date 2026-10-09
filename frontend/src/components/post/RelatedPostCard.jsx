@@ -14,7 +14,7 @@ function ClockIcon() {
 export default function RelatedPostCard({ post }) {
   return (
     <article>
-      <Link to={`/${post.slug}`} className="relative block">
+      <Link to={`/${post.slug}`} className="group relative block overflow-hidden [&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-out hover:[&_img]:scale-110">
         <PostImage post={post} />
         <div className="absolute bottom-2 left-2 flex gap-2">
           {post.categories.map((c) => (
