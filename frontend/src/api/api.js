@@ -35,3 +35,6 @@ export const fetchAbout = () => get("about.php");
 // -> { data: { categories: [{ id, slug, title, background, programs: [...] }] } }
 // Pass a slug to get only that category.
 export const fetchPrograms = (category) => get("programs.php", { category });
+
+// -> { data: { photos: [{ id, url, caption }] } }   (in the order shown on the Gallery page)
+export const fetchGallery = () => get("gallery.php");

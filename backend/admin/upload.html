@@ -40,7 +40,7 @@
 <body>
 <h1>Update site content</h1>
 
-<label for="token">Upload password (UPLOAD_TOKEN in .env). Enter it once for everything on this page.</label>
+<label for="token">Upload password. Enter it once for everything on this page.</label>
 <input id="token" type="password" autocomplete="off">
 
 <div class="tabs">
@@ -49,6 +49,7 @@
   <button type="button" id="tabHomeBtn">Homepage</button>
   <button type="button" id="tabAboutBtn">About page</button>
   <button type="button" id="tabProgramsBtn">Programs page</button>
+  <button type="button" id="tabGalleryBtn">Gallery page</button>
 </div>
 
 <!-- ============ TAB 1: one post ============ -->
@@ -206,6 +207,23 @@
   <p><button id="addProg" type="button">Add program</button></p>
   <div id="prgStatus" class="status"></div>
   <div id="prgList"></div>
+</section>
+
+<!-- ============ TAB 6: gallery page ============ -->
+<section id="tabGallery" hidden>
+  <h2>Add photos to the Gallery page</h2>
+  <p class="hint">JPG, PNG, WEBP or GIF, up to 8 MB each. You can choose many at once. New photos appear first on the site.</p>
+  <label for="gpCaption">Caption for the photos you upload now (optional)</label>
+  <input id="gpCaption" type="text" maxlength="255">
+  <label for="gpFiles">Photos</label>
+  <input id="gpFiles" type="file" accept="image/*" multiple>
+  <div id="gpPreview" class="grid"></div>
+  <p><button id="gpUpload" type="button">Upload photos</button></p>
+  <div id="gpStatus" class="status"></div>
+
+  <h2>Photos on the Gallery page</h2>
+  <p class="hint" id="gpCount"></p>
+  <div id="gpList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem;margin-top:.6rem"></div>
 </section>
 
 <script>
@@ -1007,6 +1025,144 @@ $("addProg").onclick = async () => {
   }
 };
 
+// ---------- Gallery page (photos shown on the Gallery page) ----------
+let gpPhotos = [];
+
+async function gpPost(fields, statusId, okMsg) {
+  if (needPassword(statusId)) return false;
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) if (v !== null && v !== undefined) fd.append(k, v);
+  try {
+    const res = await fetch(`${API}/gallery.php`, { method: "POST", headers: authHeaders(), body: fd });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch { say(statusId, "Server sent an error:\n" + text.replace(/<[^>]*>/g, "").trim().slice(0, 400)); return false; }
+    say(statusId, res.ok ? okMsg : json.error || "Unknown error");
+    if (res.ok) await loadGalleryPage();
+    return res.ok;
+  } catch (e) {
+    say(statusId, "Network error: " + e.message);
+    return false;
+  }
+}
+
+// Swap two photos and save the new order of the whole gallery
+function moveGalleryPhoto(from, to) {
+  const ids = gpPhotos.map((p) => p.id);
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  return gpPost({ action: "reorder", ids: ids.join(",") }, "gpStatus", "Order saved.");
+}
+
+async function loadGalleryPage() {
+  const res = await fetch(`${API}/gallery.php`);
+  const json = await res.json();
+  if (!json.data) return say("gpStatus", json.error || "Could not load the gallery.");
+  gpPhotos = json.data.photos;
+
+  $("gpCount").textContent = gpPhotos.length
+    ? `${gpPhotos.length} photo(s). The first one is shown first on the site.`
+    : "";
+
+  const list = $("gpList");
+  list.replaceChildren();
+  if (!gpPhotos.length) {
+    list.textContent = "No photos yet. The site shows placeholder tiles until you upload some.";
+    return;
+  }
+
+  gpPhotos.forEach((p, idx) => {
+    const card = document.createElement("div");
+    card.style.cssText = "border:1px solid #333;padding:.5rem";
+
+    const img = document.createElement("img");
+    img.src = p.url;
+    img.loading = "lazy";
+    img.style.cssText = "width:100%;aspect-ratio:4/3;object-fit:cover;display:block";
+
+    const cap = document.createElement("input");
+    cap.type = "text";
+    cap.maxLength = 255;
+    cap.placeholder = "Caption (optional)";
+    cap.value = p.caption || "";
+    cap.style.marginTop = ".5rem";
+
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:.3rem;margin-top:.5rem";
+
+    const btn = (label, title, disabled, onClick, plain = true) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      if (plain) b.className = "plain";
+      b.textContent = label;
+      b.title = title;
+      b.disabled = disabled;
+      b.style.padding = ".4rem .7rem";
+      b.onclick = onClick;
+      return b;
+    };
+
+    const left  = btn("◀", "Move earlier", idx === 0, () => moveGalleryPhoto(idx, idx - 1));
+    const right = btn("▶", "Move later", idx === gpPhotos.length - 1, () => moveGalleryPhoto(idx, idx + 1));
+    const save  = btn("Save", "Save caption", false,
+      () => gpPost({ action: "caption", id: p.id, caption: cap.value }, "gpStatus", "Caption saved."));
+    save.style.flex = "1";
+    const del = btn("✕", "Delete", false,
+      () => confirm("Delete this photo?") && gpPost({ action: "delete", id: p.id }, "gpStatus", "Deleted."), false);
+
+    row.append(left, right, save, del);
+    card.append(img, cap, row);
+    list.appendChild(card);
+  });
+}
+
+// Preview the chosen files before uploading
+$("gpFiles").onchange = () => {
+  const box = $("gpPreview");
+  box.replaceChildren();
+  for (const f of $("gpFiles").files) {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(f);
+    img.style.cssText = "width:100%;aspect-ratio:4/3;object-fit:cover";
+    box.appendChild(img);
+  }
+};
+
+$("gpUpload").onclick = async () => {
+  const files = [...$("gpFiles").files];
+  if (!files.length) return say("gpStatus", "Choose at least one photo.");
+  if (needPassword("gpStatus")) return;
+
+  const batches = [];
+  for (let i = 0; i < files.length; i += BATCH) batches.push(files.slice(i, i + BATCH));
+
+  $("gpUpload").disabled = true;
+  let ok = 0;
+  const problems = [];
+  for (let b = 0; b < batches.length; b++) {
+    say("gpStatus", `Uploading batch ${b + 1} of ${batches.length}…`);
+    const fd = new FormData();
+    if ($("gpCaption").value.trim()) fd.append("caption", $("gpCaption").value.trim());
+    batches[b].forEach((f) => fd.append("files[]", f));
+    try {
+      const res = await fetch(`${API}/gallery.php`, { method: "POST", headers: authHeaders(), body: fd });
+      const json = await res.json();
+      if (json.data) { ok += json.data.uploaded.length; problems.push(...json.data.errors); }
+      else problems.push(json.error || "Unknown error");
+    } catch (e) {
+      problems.push("Network error: " + e.message);
+    }
+  }
+  $("gpUpload").disabled = false;
+  say("gpStatus", `Uploaded ${ok} of ${files.length}.` + (problems.length ? "\n\nProblems:\n" + problems.join("\n") : ""));
+  if (ok) {
+    $("gpFiles").value = "";
+    $("gpCaption").value = "";
+    $("gpPreview").replaceChildren();
+  }
+  await loadGalleryPage();
+};
+
 // ---------- Tabs ----------
 function openTab(name) {
   $("tabPost").hidden = name !== "post";
@@ -1014,17 +1170,20 @@ function openTab(name) {
   $("tabHome").hidden = name !== "home";
   $("tabAbout").hidden = name !== "about";
   $("tabPrograms").hidden = name !== "programs";
+  $("tabGallery").hidden = name !== "gallery";
   $("tabPostBtn").classList.toggle("on", name === "post");
   $("tabDatesBtn").classList.toggle("on", name === "dates");
   $("tabHomeBtn").classList.toggle("on", name === "home");
   $("tabAboutBtn").classList.toggle("on", name === "about");
   $("tabProgramsBtn").classList.toggle("on", name === "programs");
+  $("tabGalleryBtn").classList.toggle("on", name === "gallery");
 }
 $("tabPostBtn").onclick = () => openTab("post");
 $("tabDatesBtn").onclick = () => openTab("dates");
 $("tabHomeBtn").onclick = () => { openTab("home"); loadHome(); };
 $("tabAboutBtn").onclick = () => { openTab("about"); loadAbout(); };
 $("tabProgramsBtn").onclick = () => { openTab("programs"); loadPrograms(); };
+$("tabGalleryBtn").onclick = () => { openTab("gallery"); loadGalleryPage(); };
 
 $("post").onchange = showPost;
 loadPosts();
