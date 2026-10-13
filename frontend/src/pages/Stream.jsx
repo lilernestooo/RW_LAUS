@@ -6,9 +6,8 @@ import Sidebar from "../components/sidebar/Sidebar";
 // Leave empty to show the "coming soon" state.
 const STREAM_URL = "";
 
-// Optional: if you'd rather use the Caster.fm embed, paste its iframe URL here.
-// When set, it replaces the custom player below.
-const EMBED_URL = "";
+// The embedded radio player. When set, it replaces the custom player below.
+const EMBED_URL = "https://radioworld951fm.ismyradio.com/player";
 
 // SAMPLE lineup (hours in 24h, Philippine time). Replace with the current schedule.
 const lineup = [
@@ -123,8 +122,9 @@ export default function Stream() {
           <iframe
             src={EMBED_URL}
             title="RW 95.1 FM stream player"
-            className="h-[200px] w-full border-0"
-            allow="autoplay"
+            className="h-[650px] w-full border-0"
+            allow="autoplay; fullscreen"
+            allowFullScreen
           />
         ) : (
           <div className="overflow-hidden border border-white/10 bg-[#1a1a1a]">
@@ -221,35 +221,6 @@ export default function Stream() {
         )}
 
         <audio ref={audioRef} preload="none" />
-
-        {/* Today's lineup */}
-        <div className="mt-10">
-          <h2 className="inline-block bg-red-600 px-3 py-1 text-sm font-bold uppercase text-white">
-            Today’s Lineup
-          </h2>
-          <ul className="mt-4 border-t border-white/10">
-            {lineup.map((s) => {
-              const live = current === s;
-              return (
-                <li
-                  key={s.title}
-                  className={`flex items-center justify-between gap-4 border-b border-white/10 px-3 py-3 ${
-                    live ? "bg-red-600/15" : ""
-                  }`}
-                >
-                  <div>
-                    <p className={`font-bold ${live ? "text-red-400" : "text-white"}`}>{s.title}</p>
-                    <p className="text-sm text-neutral-400">{s.blurb}</p>
-                  </div>
-                  <div className="shrink-0 text-right text-sm text-neutral-300">
-                    {live && <span className="mb-1 block text-xs font-bold uppercase text-red-400">Live now</span>}
-                    {fmt(s.start)} – {fmt(s.end)}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
       </section>
 
       <Sidebar />
