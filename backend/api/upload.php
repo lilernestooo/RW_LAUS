@@ -2,10 +2,10 @@
 /**
  * GET  upload.php?slug=...        -> gallery images of a post: [{id, url}]
  *
- * POST upload.php  (multipart/form-data, header X-Upload-Token)
+ * POST upload.php  (multipart/form-data, header X-Upload-Token = admin login token)
  *      slug=<post slug>  type=gallery|featured  images[]=<files>
  *
- * POST upload.php  action=delete  id=<post_images id>   (header X-Upload-Token)
+ * POST upload.php  action=delete  id=<post_images id>   (header X-Upload-Token = admin login token)
  */
 require __DIR__ . '/config.php';
 
@@ -55,10 +55,9 @@ if ($method === 'GET') {
 
 if ($method !== 'POST') respond(['error' => 'Method not allowed'], 405);
 
-// ---------- Auth ----------
-if (UPLOAD_TOKEN === '') respond(['error' => 'UPLOAD_TOKEN is not set in backend/.env'], 500);
-$token = $_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '';
-if (!hash_equals(UPLOAD_TOKEN, $token)) respond(['error' => 'Invalid upload token'], 401);
+// ---------- Auth (admin login token) ----------
+require_once __DIR__ . '/auth.php';
+require_admin();
 
 // Body bigger than post_max_size arrives empty
 if (empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
