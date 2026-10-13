@@ -1,13 +1,16 @@
 // Talks to the PHP backend in XAMPP.
 const API = import.meta.env.VITE_API_URL ?? "http://localhost/RW_LAUS/backend/api";
 
-async function get(endpoint, params = {}) {
+// Public reads (the website and the admin tables both use this)
+export async function get(endpoint, params = {}) {
   const qs = new URLSearchParams(
     Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
   ).toString();
   const res = await fetch(`${API}/${endpoint}${qs ? `?${qs}` : ""}`);
   if (!res.ok) {
-    const err = new Error(`API ${res.status}`);
+    // show the server's own message when it sent one
+    const body = await res.json().catch(() => null);
+    const err = new Error(body?.error || `API ${res.status}`);
     err.status = res.status;
     throw err;
   }
@@ -38,3 +41,95 @@ export const fetchPrograms = (category) => get("programs.php", { category });
 
 // -> { data: { photos: [{ id, url, caption }] } }   (in the order shown on the Gallery page)
 export const fetchGallery = () => get("gallery.php");
+
+/* =====================================================================
+   ADMIN: login, upload, edit, delete. Used only by src/admin/*
+   ===================================================================== */
+const TOKEN_KEY = "rw_admin_token";
+export const BATCH = 10; // PHP allows 20 files per request by default
+
+export const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
+export const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
+export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+
+// Every admin request carries the login token in the header the PHP already reads.
+async function request(endpoint, { method = "POST", body, json } = {}) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers["X-Upload-Token"] = token;
+  let payload = body;
+  if (json !== undefined) {
+    headers["Content-Type"] = "application/json";
+    payload = JSON.stringify(json);
+  }
+
+  let res;
+  try {
+    res = await fetch(`${API}/${endpoint}`, { method, headers, body: payload });
+  } catch (e) {
+    throw new Error("Network error: " + e.message);
+  }
+
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error("Server sent an error:\n" + text.replace(/<[^>]*>/g, "").trim().slice(0, 300));
+  }
+
+  if (res.status === 401 && token) {
+    clearToken();
+    window.dispatchEvent(new Event("admin:unauthorized")); // sends the admin back to the login form
+  }
+  if (!res.ok) throw new Error(data.error || data.data?.errors?.join("\n") || `Request failed (${res.status})`);
+  return data;
+}
+
+const toForm = (fields) => {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) if (v !== null && v !== undefined) fd.append(k, v);
+  return fd;
+};
+
+export const postJson = (endpoint, json) => request(endpoint, { json });
+export const postForm = (endpoint, fields) => request(endpoint, { body: toForm(fields) });
+
+// Sends files in batches of BATCH. Returns { ok, total, problems }.
+export async function uploadBatches(endpoint, fields, fieldName, files, onProgress) {
+  const batches = [];
+  for (let i = 0; i < files.length; i += BATCH) batches.push(files.slice(i, i + BATCH));
+  let ok = 0;
+  const problems = [];
+  for (let b = 0; b < batches.length; b++) {
+    onProgress?.(b + 1, batches.length);
+    const fd = toForm(fields);
+    batches[b].forEach((f) => fd.append(fieldName, f));
+    try {
+      const json = await request(endpoint, { body: fd });
+      ok += json.data.uploaded.length;
+      problems.push(...(json.data.errors || []));
+    } catch (e) {
+      problems.push(e.message);
+    }
+  }
+  return { ok, total: files.length, problems };
+}
+
+// Every post, across all pages (the admin tables want the full list)
+export async function fetchAllPosts() {
+  const all = [];
+  let page = 1, totalPages = 1;
+  do {
+    const json = await get("posts.php", { per_page: 50, page });
+    all.push(...json.data);
+    totalPages = json.meta.total_pages;
+    page++;
+  } while (page <= totalPages);
+  return all;
+}
+
+export const auth = {
+  login: (username, password) => postJson("auth.php", { action: "login", username, password }),
+  me: () => request("auth.php", { method: "GET" }),
+};

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/footer/Footer";
@@ -15,7 +16,11 @@ import Post from "./pages/Post";
 import PostList from "./pages/Postlist";
 import PageLoader from "./components/ui/PageLoader";
 
-export default function App() {
+// Loaded only when someone opens /admin, so visitors never download it
+const AdminApp = lazy(() => import("./admin/AdminApp"));
+
+// The public website (your old App, unchanged)
+function PublicSite() {
   const navigate = useNavigate();
 
   return (
@@ -42,5 +47,15 @@ export default function App() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* /admin has no public Header or Footer */}
+      <Route path="/admin/*" element={<Suspense fallback={null}><AdminApp /></Suspense>} />
+      <Route path="*" element={<PublicSite />} />
+    </Routes>
   );
 }
