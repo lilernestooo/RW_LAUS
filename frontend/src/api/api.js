@@ -42,6 +42,22 @@ export const fetchPrograms = (category) => get("programs.php", { category });
 // -> { data: { photos: [{ id, url, caption }] } }   (in the order shown on the Gallery page)
 export const fetchGallery = () => get("gallery.php");
 
+// Contact Us form (public, no login needed) -> { data: { saved, emailed } }
+export async function sendContact(payload) {
+  const res = await fetch(`${API}/contact.php`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const err = new Error(body?.error || `API ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  return body;
+}
+
 /* =====================================================================
    ADMIN: login, upload, edit, delete. Used only by src/admin/*
    ===================================================================== */

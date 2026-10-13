@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
+import { sendContact } from "../api/api";
 
 // Google Maps embed (Jose Abad Santos Avenue, San Fernando, Pampanga)
 const MAP_URL =
@@ -21,10 +22,6 @@ const DIRECTIONS_URL =
 // Opens the place itself in Google Maps
 const OPEN_URL = `https://www.google.com/maps/place/${PLACE_NAME}/data=!4m2!3m1!1s${PLACE_ID}`;
 
-// Set this when the backend is ready, e.g. "http://localhost/RW_LAUS/backend/api/contact.php"
-// While it is empty the form checks the fields but does not send anything.
-const CONTACT_ENDPOINT = "";
-
 const details = [
   { label: "Address", value: "3rd Floor, Corporate Guarantee, Jose Abad Santos Avenue, City of San Fernando, Pampanga 2000" },
   { label: "Tel No", value: "(045) 963 9595", href: "tel:+63459639595" },
@@ -36,7 +33,7 @@ const details = [
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const field =
-  "w-full border border-white/10 bg-[#222] px-3 py-2.5 text-white outline-none transition focus:border-red-600 focus:bg-[#2a2a2a]";
+  "w-full border border-white/10 bg-[#222] px-3 py-2.5 text-white outline-none transition focus:border-red-600 focus:bg-[#2a2a2a] text-base";
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "", website: "" }); // website = hidden spam trap
@@ -62,34 +59,29 @@ export default function Contact() {
     setErrors(er);
     if (Object.keys(er).length) return;
 
-    if (!CONTACT_ENDPOINT) {
-      setStatus({ type: "error", text: "Sending isn't connected yet." });
-      return;
-    }
-
     setStatus({ type: "sending", text: "Sending…" });
     try {
-      const res = await fetch(CONTACT_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          message: form.message.trim(),
-          website: form.website,
-        }),
+      await sendContact({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
+        website: form.website,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setForm({ name: "", email: "", message: "", website: "" });
       setStatus({ type: "ok", text: "Thank you! Your message has been sent." });
-    } catch {
-      setStatus({ type: "error", text: "Sorry, we couldn't send your message. Please try again." });
+    } catch (err) {
+      // 422 = a field was rejected, 429 = too many messages: the server's own wording is clearer for the visitor
+      const friendly = err.status === 422 || err.status === 429;
+      setStatus({
+        type: "error",
+        text: friendly ? err.message : "Sorry, we couldn't send your message. Please try again.",
+      });
     }
   };
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
-      <section>
+      <section className="min-w-0">
         <nav className="mb-4 text-sm text-neutral-400">
           <Link to="/" className="hover:text-white">
             Home
@@ -102,7 +94,7 @@ export default function Contact() {
 
         <div className="grid gap-8 md:grid-cols-[1.3fr_1fr]">
           {/* Left: map + details */}
-          <div>
+          <div className="min-w-0">
             <div className="relative border-4 border-white bg-white">
               <iframe
                 src={MAP_URL}
@@ -114,7 +106,7 @@ export default function Contact() {
               />
 
               {/* Same look as Google's place card, sitting on top of it */}
-              <div className="absolute left-2 top-2 w-[250px] max-w-[calc(100%-1rem)] rounded-sm bg-white p-4 font-[Arial,Helvetica,sans-serif] shadow-[0_2px_6px_rgba(0,0,0,0.3)]">
+              <div className="absolute left-2 top-2 w-[220px] max-w-[calc(100%-1rem)] rounded-sm bg-white p-3 sm:w-[250px] sm:p-4 font-[Arial,Helvetica,sans-serif] shadow-[0_2px_6px_rgba(0,0,0,0.3)]">
                 <p className="text-[15px] font-medium leading-tight text-[#202124]">Jose Abad Santos Avenue</p>
                 <p className="mt-1 text-[12.5px] leading-[1.45] text-[#70757a]">
                   Jose Abad Santos Ave, San Fernando, Pampanga
@@ -125,7 +117,7 @@ export default function Contact() {
                     href={OPEN_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-[34px] items-center gap-2 rounded-full bg-[#1a73e8] px-4 text-[13px] font-medium text-white shadow-sm transition hover:bg-[#1765cc] hover:shadow-md"
+                    className="flex h-10 items-center gap-2 rounded-full bg-[#1a73e8] px-3 text-[13px] sm:h-[34px] sm:px-4 font-medium text-white shadow-sm transition hover:bg-[#1765cc] hover:shadow-md"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -141,7 +133,7 @@ export default function Contact() {
                     rel="noopener noreferrer"
                     aria-label="Directions"
                     title="Directions"
-                    className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#f1f3f4] text-[#1a73e8] transition hover:bg-[#e3e6e8]"
+                    className="flex h-10 w-10 items-center justify-center sm:h-[34px] sm:w-[34px] rounded-full bg-[#f1f3f4] text-[#1a73e8] transition hover:bg-[#e3e6e8]"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M21.71 11.29l-9-9a.996.996 0 0 0-1.41 0l-9 9a.996.996 0 0 0 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9a.996.996 0 0 0 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z" />
@@ -153,10 +145,10 @@ export default function Contact() {
 
             <ul className="mt-6 space-y-4 text-[15px] leading-relaxed text-white">
               {details.map((d) => (
-                <li key={d.label} className="border-l-4 border-[#e60000] pl-3">
+                <li key={d.label} className="break-words border-l-4 border-[#e60000] pl-3">
                   <span className="block text-xs font-bold uppercase tracking-wide text-neutral-400">{d.label}</span>
                   {d.href ? (
-                    <a href={d.href} className="transition hover:text-red-500">
+                    <a href={d.href} className="inline-block py-1 transition hover:text-red-500">
                       {d.value}
                     </a>
                   ) : (
@@ -168,7 +160,7 @@ export default function Contact() {
           </div>
 
           {/* Right: form */}
-          <form onSubmit={onSubmit} noValidate className="space-y-5">
+          <form onSubmit={onSubmit} noValidate className="min-w-0 space-y-5">
             <div>
               <label htmlFor="c-name" className="mb-1.5 block font-bold text-white">
                 Name
@@ -235,7 +227,7 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={status.type === "sending"}
-                className="bg-[#e60000] px-6 py-3 text-sm font-bold uppercase text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="w-full bg-[#e60000] px-6 py-3 text-sm font-bold uppercase text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"
               >
                 {status.type === "sending" ? "Sending…" : "Submit"}
               </button>
