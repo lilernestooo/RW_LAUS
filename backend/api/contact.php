@@ -46,7 +46,8 @@ $ip  = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45);
 
 $recent = $pdo->prepare('SELECT COUNT(*) FROM contacts_tbl WHERE ip_address = ? AND created_at > (NOW() - INTERVAL 1 HOUR)');
 $recent->execute([$ip]);
-if ((int) $recent->fetchColumn() >= 5) {
+$limit = (int) env('CONTACT_RATE_LIMIT', '5');
+if ((int) $recent->fetchColumn() >= $limit) {
     respond(['error' => 'Too many messages from your connection. Please try again later.'], 429);
 }
 
@@ -61,7 +62,7 @@ try {
 }
 
 // 2) Email it
-$to       = env('CONTACT_TO', 'ernestlazatin69@gmail.com');
+$to       = env('CONTACT_TO', 'mary.angela.figueras@gmail.com');
 $smtpUser = env('SMTP_USER', '');
 $from     = env('CONTACT_FROM', $smtpUser !== '' ? $smtpUser : 'noreply@localhost');
 
@@ -97,7 +98,18 @@ try {
         $mail->SMTPSecure = strtolower(env('SMTP_SECURE', 'tls')) === 'ssl'
             ? PHPMailer::ENCRYPTION_SMTPS
             : PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Timeout    = 10; // don't let the form hang if the mail server is unreachable
+        $mail->Timeout    = 20;
+
+        // Local XAMPP only: some networks time out on IPv6, so connect over IPv4
+        if (strtolower(env('SMTP_FORCE_IPV4', 'false')) === 'true') {
+            $ip4 = gethostbyname($smtpHost);
+            if ($ip4 !== $smtpHost) {
+                $mail->Host = $ip4;
+                $ssl = $mail->SMTPOptions['ssl'] ?? [];
+                $ssl['peer_name'] = $smtpHost;
+                $mail->SMTPOptions = ['ssl' => $ssl];
+            }
+        }
 
         // Local XAMPP often has no CA bundle; only disable verification when .env says so
         if (strtolower(env('SMTP_VERIFY_SSL', 'true')) === 'false') {
@@ -120,7 +132,17 @@ try {
     $mail->Body    = $body;
     $mail->AltBody = $altBody;
 
-    $sent = $mail->send();
+    $attempts = 0;
+    while (!$sent && $attempts < 2) {
+        $attempts++;
+        try {
+            $sent = $mail->send();
+        } catch (MailException $e) {
+            error_log("contact.php: attempt $attempts failed for rec_id $recId: " . $mail->ErrorInfo);
+            $mail->smtpClose();
+            if ($attempts < 2) sleep(1);
+        }
+    }
 } catch (MailException $e) {
     error_log("contact.php: mail failed for rec_id $recId: " . $mail->ErrorInfo);
     $sent = false;

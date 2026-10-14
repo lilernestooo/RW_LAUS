@@ -6,12 +6,12 @@ import PostImage from "../post/PostImage";
 const socials = [
   {
     label: "Facebook",
-    href: "https://facebook.com",
+    href: "http://www.facebook.com/RW951FM",
     icon: <path d="M13.5 22v-8.5h2.9l.5-3.5h-3.4V7.9c0-1 .3-1.7 1.7-1.7H17V3.1C16.7 3.1 15.7 3 14.6 3 12.2 3 10.5 4.5 10.5 7.2V10h-3v3.5h3V22h3z" fill="currentColor" />,
   },
   {
     label: "Instagram",
-    href: "https://instagram.com",
+    href: "http://www.instagram.com/rw95.1fm",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth="2">
         <rect x="3" y="3" width="18" height="18" rx="5" />
@@ -22,12 +22,12 @@ const socials = [
   },
   {
     label: "TikTok",
-    href: "https://tiktok.com",
+    href: "https://www.tiktok.com/@rw95.1fm",
     icon: <path d="M16.6 5.8a4.3 4.3 0 0 1-1-2.8h-3.2v12.6a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.9a5.9 5.9 0 1 0 5 5.8V9.5a7.4 7.4 0 0 0 4.3 1.4V7.7a4.3 4.3 0 0 1-3.3-1.9z" fill="currentColor" />,
   },
   {
     label: "YouTube",
-    href: "https://youtube.com",
+    href: "https://www.youtube.com/@rw95.1fm",
     icon: <path fillRule="evenodd" fill="currentColor" d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z" />,
   },
 ];
