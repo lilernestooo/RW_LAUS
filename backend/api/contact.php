@@ -62,7 +62,7 @@ try {
 }
 
 // 2) Email it
-$to       = env('CONTACT_TO', 'mary.angela.figueras@gmail.com');
+$to       = env('CONTACT_TO', 'ernestlazatin69@gmail.com');
 $smtpUser = env('SMTP_USER', '');
 $from     = env('CONTACT_FROM', $smtpUser !== '' ? $smtpUser : 'noreply@localhost');
 
@@ -71,17 +71,64 @@ $safeName = preg_replace('/[\r\n]+/', ' ', $name);
 
 $subject = 'New message from ' . $safeName . ' (RW 95.1 FM website)';
 
-$body = '<html><body style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#222">'
-      . '<p>New message from the RW 95.1 FM <b>Contact Us</b> page.</p>'
-      . '<p><b>Name:</b> ' . $h($name) . '<br>'
-      . '<b>E-mail:</b> ' . $h($email) . '<br>'
-      . '<b>Record #:</b> ' . $recId . '</p>'
-      . '<p><b>Message:</b><br>' . ($message !== '' ? nl2br($h($message)) : '<i>(no message)</i>') . '</p>'
-      . '</body></html>';
+$sentAt    = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('F j, Y \a\t g:i A');
+$replyHref = 'mailto:' . $email . '?subject=' . rawurlencode('Re: Your message to RW 95.1 FM');
+$msgHtml   = $message !== '' ? nl2br($h($message)) : '<i style="color:#888888">(no message)</i>';
+$label     = 'font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#888888;';
 
-$altBody = "New message from the RW 95.1 FM Contact Us page.\n\n"
-         . "Name: $name\nE-mail: $email\nRecord #: $recId\n\n"
-         . "Message:\n" . ($message !== '' ? $message : '(no message)');
+// Banner picture: looked for in these folders (backend/assets/ is the one to use)
+$bannerPath = '';
+foreach (['/../assets/cropped-NewBanner.jpg', '/../assets/banner/cropped-NewBanner.jpg', '/../uploads/cropped-NewBanner.jpg'] as $rel) {
+    if (is_file(__DIR__ . $rel)) { $bannerPath = __DIR__ . $rel; break; }
+}
+$hasBanner = $bannerPath !== '';
+if (!$hasBanner) error_log('contact.php: banner image not found');
+
+// With the banner: picture on top, thin red bar below. Without it: the red text header.
+$headerHtml = $hasBanner
+  ? '<tr><td style="padding:0;line-height:0;"><img src="cid:rwbanner" width="600" alt="RW 95.1 FM" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>'
+    . '<tr><td style="background:#e60000;padding:10px 28px;font-size:13px;color:#ffffff;">New message from the Contact Us page</td></tr>'
+  : '<tr><td style="background:#e60000;padding:20px 28px;">'
+    . '<div style="font-size:22px;font-weight:bold;color:#ffffff;">RW 95.1 FM</div>'
+    . '<div style="font-size:13px;color:#ffd6d6;margin-top:4px;">New message from the Contact Us page</div>'
+    . '</td></tr>';
+
+$body = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+  . '<body style="margin:0;padding:0;background:#f2f2f2;">'
+  . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f2;padding:24px 12px;"><tr><td align="center">'
+  . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#222222;">'
+
+  // header
+  . $headerHtml
+
+  // sender details + message
+  . '<tr><td style="padding:28px 28px 8px;">'
+  . '<div style="' . $label . '">Name</div>'
+  . '<div style="font-size:17px;margin:4px 0 18px;">' . $h($name) . '</div>'
+  . '<div style="' . $label . '">E-mail</div>'
+  . '<div style="font-size:17px;margin:4px 0 18px;"><a href="mailto:' . $h($email) . '" style="color:#e60000;text-decoration:none;">' . $h($email) . '</a></div>'
+  . '<div style="' . $label . '">Message</div>'
+  . '<div style="font-size:15px;line-height:1.6;margin-top:8px;padding:14px 16px;background:#f7f7f7;border-left:4px solid #e60000;">' . $msgHtml . '</div>'
+  . '</td></tr>'
+
+  // reply button
+  . '<tr><td style="padding:22px 28px 30px;">'
+  . '<a href="' . $h($replyHref) . '" style="display:inline-block;background:#e60000;color:#ffffff;font-weight:bold;font-size:14px;text-decoration:none;padding:12px 24px;">Reply to ' . $h($safeName) . '</a>'
+  . '</td></tr>'
+
+  // footer
+  . '<tr><td style="background:#fafafa;border-top:1px solid #eeeeee;padding:14px 28px;font-size:12px;color:#999999;">'
+  . 'Received ' . $sentAt . ' (Philippine time) &middot; You can also just reply to this e-mail to answer the sender.'
+  . '</td></tr>'
+
+  . '</table></td></tr></table></body></html>';
+
+$altBody = "New message from the RW 95.1 FM Contact Us page\n"
+         . "----------------------------------------------\n"
+         . "Name:   $name\n"
+         . "E-mail: $email\n\n"
+         . "Message:\n" . ($message !== '' ? $message : '(no message)') . "\n\n"
+         . "Received $sentAt (Philippine time)";
 
 $sent = false;
 $mail = new PHPMailer(true);
@@ -127,6 +174,7 @@ try {
     $mail->setFrom($from, 'RW 95.1 FM Website');
     $mail->addAddress($to);
     $mail->addReplyTo($email, $safeName);
+    if ($hasBanner) $mail->addEmbeddedImage($bannerPath, 'rwbanner', 'banner.jpg', 'base64', 'image/jpeg');
     $mail->isHTML(true);
     $mail->Subject = $subject;
     $mail->Body    = $body;
