@@ -1,21 +1,34 @@
 <?php
 /**
  * POST contact.php   (JSON)  { name, email, message, website }
- *   -> saves the message in contacts_tbl, then emails it to CONTACT_TO
+ *   -> saves the message in contacts_tbl, then emails it to CONTACT_TO via SMTP (PHPMailer)
  *   <- { data: { saved: true, emailed: true|false } }
  *
- * Optional lines for backend/.env (the defaults below work without them):
- *   CONTACT_TO=ernestlazatin69@gmail.com      who receives the messages
- *   CONTACT_FROM=noreply@yourdomain.com       sender shown on the email (use your real domain when live)
+ * backend/.env:
+ *   SMTP_HOST, SMTP_PORT, SMTP_SECURE (tls|ssl), SMTP_USER, SMTP_PASS
+ *   CONTACT_TO, CONTACT_FROM
+ *   SMTP_VERIFY_SSL=false   (local XAMPP only)
+ * If SMTP_HOST is empty, it falls back to PHP's mail().
  */
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as MailException;
+
 require __DIR__ . '/config.php';
+
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require __DIR__ . '/vendor/autoload.php';
+} else {
+    require __DIR__ . '/lib/PHPMailer/src/Exception.php';
+    require __DIR__ . '/lib/PHPMailer/src/PHPMailer.php';
+    require __DIR__ . '/lib/PHPMailer/src/SMTP.php';
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') respond(['error' => 'Method not allowed'], 405);
 
 $in = json_decode(file_get_contents('php://input'), true);
 if (!is_array($in)) respond(['error' => 'Invalid request.'], 400);
 
-// Spam trap: real visitors never fill this in. Bots get a fake "ok" and nothing is saved.
+// Spam trap
 if (trim((string) ($in['website'] ?? '')) !== '') {
     respond(['data' => ['saved' => true, 'emailed' => false]]);
 }
@@ -31,7 +44,6 @@ if (mb_strlen($message) > 2000) respond(['error' => 'Your message is too long (2
 $pdo = db();
 $ip  = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45);
 
-// At most 5 messages per hour from one connection, so the form can't be used to flood your inbox
 $recent = $pdo->prepare('SELECT COUNT(*) FROM contacts_tbl WHERE ip_address = ? AND created_at > (NOW() - INTERVAL 1 HOUR)');
 $recent->execute([$ip]);
 if ((int) $recent->fetchColumn() >= 5) {
@@ -49,13 +61,14 @@ try {
 }
 
 // 2) Email it
-$to   = env('CONTACT_TO', 'ernestlazatin69@gmail.com'); // temporary landing address
-$from = env('CONTACT_FROM', 'noreply@localhost');
+$to       = env('CONTACT_TO', 'ernestlazatin69@gmail.com');
+$smtpUser = env('SMTP_USER', '');
+$from     = env('CONTACT_FROM', $smtpUser !== '' ? $smtpUser : 'noreply@localhost');
 
 $h = function (string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); };
-$safeName = preg_replace('/[\r\n]+/', ' ', $name);       // keeps visitors from injecting mail headers
+$safeName = preg_replace('/[\r\n]+/', ' ', $name);
 
-$subject = '=?UTF-8?B?' . base64_encode('New message from ' . $safeName . ' (RW 95.1 FM website)') . '?=';
+$subject = 'New message from ' . $safeName . ' (RW 95.1 FM website)';
 
 $body = '<html><body style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#222">'
       . '<p>New message from the RW 95.1 FM <b>Contact Us</b> page.</p>'
@@ -65,17 +78,56 @@ $body = '<html><body style="font-family:Arial,Helvetica,sans-serif;font-size:15p
       . '<p><b>Message:</b><br>' . ($message !== '' ? nl2br($h($message)) : '<i>(no message)</i>') . '</p>'
       . '</body></html>';
 
-$headers  = "MIME-Version: 1.0\r\n";
-$headers .= "Content-type: text/html; charset=UTF-8\r\n";
-$headers .= 'From: RW 95.1 FM Website <' . $from . ">\r\n";
-$headers .= 'Reply-To: ' . $email . "\r\n";               // the e-mail was validated above, so it has no line breaks
+$altBody = "New message from the RW 95.1 FM Contact Us page.\n\n"
+         . "Name: $name\nE-mail: $email\nRecord #: $recId\n\n"
+         . "Message:\n" . ($message !== '' ? $message : '(no message)');
 
-$sent = @mail($to, $subject, $body, $headers);
+$sent = false;
+$mail = new PHPMailer(true);
+try {
+    $smtpHost = env('SMTP_HOST', '');
+
+    if ($smtpHost !== '') {
+        $mail->isSMTP();
+        $mail->Host       = $smtpHost;
+        $mail->Port       = (int) env('SMTP_PORT', '587');
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $smtpUser;
+        $mail->Password   = env('SMTP_PASS', '');
+        $mail->SMTPSecure = strtolower(env('SMTP_SECURE', 'tls')) === 'ssl'
+            ? PHPMailer::ENCRYPTION_SMTPS
+            : PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Timeout    = 10; // don't let the form hang if the mail server is unreachable
+
+        // Local XAMPP often has no CA bundle; only disable verification when .env says so
+        if (strtolower(env('SMTP_VERIFY_SSL', 'true')) === 'false') {
+            $mail->SMTPOptions = ['ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+            ]];
+        }
+    } else {
+        $mail->isMail(); // fallback for hosts where mail() already works
+    }
+
+    $mail->CharSet = 'UTF-8';
+    $mail->setFrom($from, 'RW 95.1 FM Website');
+    $mail->addAddress($to);
+    $mail->addReplyTo($email, $safeName);
+    $mail->isHTML(true);
+    $mail->Subject = $subject;
+    $mail->Body    = $body;
+    $mail->AltBody = $altBody;
+
+    $sent = $mail->send();
+} catch (MailException $e) {
+    error_log("contact.php: mail failed for rec_id $recId: " . $mail->ErrorInfo);
+    $sent = false;
+}
 
 if ($sent) {
     $pdo->prepare('UPDATE contacts_tbl SET emailed = 1 WHERE rec_id = ?')->execute([$recId]);
-} else {
-    error_log("contact.php: mail() failed for rec_id $recId");
 }
 
 respond(['data' => ['saved' => true, 'emailed' => $sent]]);
