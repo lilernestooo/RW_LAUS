@@ -1,7 +1,64 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { sendContact } from "../api/api";
+
+/* ---------- Reveal-on-scroll helper ----------
+   direction: "up" | "left" | "right" | "none"
+   delay: milliseconds (use it to stagger items)
+   as: the tag to render ("div" by default, "li", "nav", "h1", ...)
+   Plays once, and is skipped for people who prefer reduced motion. */
+function Reveal({ as: Tag = "div", direction = "up", delay = 0, className = "", children, ...rest }) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduce || typeof IntersectionObserver === "undefined") {
+      setShown(true);
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const hiddenShift = {
+    up: "translate-y-8",
+    left: "-translate-x-8",
+    right: "translate-x-8",
+    none: "",
+  }[direction];
+
+  return (
+    <Tag
+      ref={ref}
+      style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
+        shown ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${hiddenShift}`
+      } ${className}`}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+}
 
 // Google Maps embed (Jose Abad Santos Avenue, San Fernando, Pampanga)
 const MAP_URL =
@@ -82,20 +139,22 @@ export default function Contact() {
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
       <section className="min-w-0">
-        <nav className="mb-4 text-sm text-neutral-400">
+        <Reveal as="nav" direction="none" className="mb-4 text-sm text-neutral-400">
           <Link to="/" className="hover:text-white">
             Home
           </Link>
           {" / "}
           <span className="text-neutral-300">Contact Us</span>
-        </nav>
+        </Reveal>
 
-        <h1 className="mb-6 text-3xl font-bold text-white sm:text-4xl">Contact Us</h1>
+        <Reveal as="h1" delay={100} className="mb-6 text-3xl font-bold text-white sm:text-4xl">
+          Contact Us
+        </Reveal>
 
         <div className="grid gap-8 md:grid-cols-[1.3fr_1fr]">
           {/* Left: map + details */}
           <div className="min-w-0">
-            <div className="relative border-4 border-white bg-white">
+            <Reveal direction="left" delay={150} className="relative border-4 border-white bg-white">
               <iframe
                 src={MAP_URL}
                 title="RW 95.1 FM location map"
@@ -141,11 +200,16 @@ export default function Contact() {
                   </a>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
             <ul className="mt-6 space-y-4 text-[15px] leading-relaxed text-white">
-              {details.map((d) => (
-                <li key={d.label} className="break-words border-l-4 border-[#e60000] pl-3">
+              {details.map((d, i) => (
+                <Reveal
+                  as="li"
+                  key={d.label}
+                  delay={i * 100}
+                  className="break-words border-l-4 border-[#e60000] pl-3"
+                >
                   <span className="block text-xs font-bold uppercase tracking-wide text-neutral-400">{d.label}</span>
                   {d.href ? (
                     <a href={d.href} className="inline-block py-1 transition hover:text-red-500">
@@ -154,14 +218,14 @@ export default function Contact() {
                   ) : (
                     d.value
                   )}
-                </li>
+                </Reveal>
               ))}
             </ul>
           </div>
 
           {/* Right: form */}
           <form onSubmit={onSubmit} noValidate className="min-w-0 space-y-5">
-            <div>
+            <Reveal direction="right" delay={150}>
               <label htmlFor="c-name" className="mb-1.5 block font-bold text-white">
                 Name
               </label>
@@ -176,9 +240,9 @@ export default function Contact() {
                 className={field}
               />
               {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
-            </div>
+            </Reveal>
 
-            <div>
+            <Reveal direction="right" delay={250}>
               <label htmlFor="c-email" className="mb-1.5 block font-bold text-white">
                 E-mail
               </label>
@@ -193,9 +257,9 @@ export default function Contact() {
                 className={field}
               />
               {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
-            </div>
+            </Reveal>
 
-            <div>
+            <Reveal direction="right" delay={350}>
               <label htmlFor="c-message" className="mb-1.5 block font-bold text-white">
                 Your message <span className="font-normal text-neutral-400">(optional)</span>
               </label>
@@ -208,7 +272,7 @@ export default function Contact() {
                 className={`${field} resize-y`}
               />
               <p className="mt-1 text-right text-xs text-neutral-500">{form.message.length} / 2000</p>
-            </div>
+            </Reveal>
 
             {/* Spam trap: people never see this, bots fill it in */}
             <div className="absolute -left-[9999px]" aria-hidden="true">
@@ -223,7 +287,7 @@ export default function Contact() {
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <Reveal direction="up" delay={450} className="flex flex-wrap items-center gap-4">
               <button
                 type="submit"
                 disabled={status.type === "sending"}
@@ -236,7 +300,7 @@ export default function Contact() {
                   {status.text}
                 </p>
               )}
-            </div>
+            </Reveal>
           </form>
         </div>
       </section>

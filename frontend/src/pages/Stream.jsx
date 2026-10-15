@@ -2,6 +2,63 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 
+/* ---------- Reveal-on-scroll helper ----------
+   direction: "up" | "left" | "right" | "none"
+   delay: milliseconds (use it to stagger items)
+   as: the tag to render ("div" by default, "li", "nav", "h1", ...)
+   Plays once, and is skipped for people who prefer reduced motion. */
+function Reveal({ as: Tag = "div", direction = "up", delay = 0, className = "", children, ...rest }) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduce || typeof IntersectionObserver === "undefined") {
+      setShown(true);
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const hiddenShift = {
+    up: "translate-y-8",
+    left: "-translate-x-8",
+    right: "translate-x-8",
+    none: "",
+  }[direction];
+
+  return (
+    <Tag
+      ref={ref}
+      style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
+        shown ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${hiddenShift}`
+      } ${className}`}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+}
+
 // Paste your stream URL here (e.g. the Caster.fm direct stream link).
 // Leave empty to show the "coming soon" state.
 const STREAM_URL = "";
@@ -108,30 +165,34 @@ export default function Stream() {
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
       <section>
-        <nav className="mb-4 text-sm text-neutral-400">
+        <Reveal as="nav" direction="none" className="mb-4 text-sm text-neutral-400">
           <Link to="/" className="hover:text-white">
             Home
           </Link>
           {" / "}
           <span className="text-neutral-300">RW95.1 Stream Player</span>
-        </nav>
+        </Reveal>
 
-        <h1 className="mb-6 text-3xl font-bold text-white sm:text-4xl">RW95.1 Stream Player</h1>
+        <Reveal as="h1" delay={100} className="mb-6 text-3xl font-bold text-white sm:text-4xl">
+          RW95.1 Stream Player
+        </Reveal>
 
         {EMBED_URL ? (
-          <iframe
-            src={EMBED_URL}
-            title="RW 95.1 FM stream player"
-            className="h-[650px] w-full border-0"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-          />
+          <Reveal direction="up" delay={200}>
+            <iframe
+              src={EMBED_URL}
+              title="RW 95.1 FM stream player"
+              className="h-[650px] w-full border-0"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+            />
+          </Reveal>
         ) : (
-          <div className="overflow-hidden border border-white/10 bg-[#1a1a1a]">
+          <Reveal direction="up" delay={200} className="overflow-hidden border border-white/10 bg-[#1a1a1a]">
             {/* Top: now playing */}
             <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
               {/* Artwork with spinning ring */}
-              <div className="relative mx-auto h-32 w-32 shrink-0 sm:mx-0">
+              <Reveal direction="left" delay={350} className="relative mx-auto h-32 w-32 shrink-0 sm:mx-0">
                 <div
                   className={`absolute inset-0 rounded-full border-4 border-dashed border-red-600/70 ${
                     playing ? "animate-[spin_8s_linear_infinite]" : ""
@@ -141,9 +202,9 @@ export default function Stream() {
                   <span className="text-2xl font-extrabold italic text-amber-400">RW</span>
                   <span className="text-lg font-extrabold leading-none text-white">95.1</span>
                 </div>
-              </div>
+              </Reveal>
 
-              <div className="min-w-0 flex-1">
+              <Reveal direction="up" delay={450} className="min-w-0 flex-1">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="flex items-center gap-1.5 bg-red-600 px-2 py-0.5 text-xs font-bold uppercase text-white">
                     <span className="relative flex h-2 w-2">
@@ -165,13 +226,19 @@ export default function Stream() {
                 <p className="mt-1 text-sm text-neutral-400">
                   {current ? current.blurb : "Your countryside radio, Keni Na Ka!"}
                 </p>
-              </div>
+              </Reveal>
 
-              <Equalizer playing={playing} />
+              <Reveal direction="right" delay={550}>
+                <Equalizer playing={playing} />
+              </Reveal>
             </div>
 
             {/* Controls */}
-            <div className="flex flex-wrap items-center gap-4 border-t border-white/10 bg-black/40 px-5 py-4">
+            <Reveal
+              direction="up"
+              delay={650}
+              className="flex flex-wrap items-center gap-4 border-t border-white/10 bg-black/40 px-5 py-4"
+            >
               <button
                 type="button"
                 onClick={toggle}
@@ -216,8 +283,8 @@ export default function Stream() {
                 <span className="text-sm text-neutral-400">Live stream will be available soon.</span>
               )}
               {error && <span className="text-sm text-red-400">{error}</span>}
-            </div>
-          </div>
+            </Reveal>
+          </Reveal>
         )}
 
         <audio ref={audioRef} preload="none" />
