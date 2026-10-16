@@ -160,9 +160,9 @@ export default function Programs() {
         <span>Programs</span>
       </nav>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* Main content */}
-        <section>
+        <section className="min-w-0 w-full">
           <h1 className="mb-16 text-3xl font-bold text-white">Programs</h1>
 
           <div className="grid gap-4 sm:grid-cols-2">

@@ -121,12 +121,12 @@ export default function PostList() {
         className="pointer-events-none fixed left-0 top-0 z-[60] h-1 w-full origin-left scale-x-0 bg-[#e60000]"
       />
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
-        <section>
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
+        <section className="min-w-0 w-full">
           {/* Heading slides in, red line draws underneath */}
-          <div ref={headRef} className="mb-8">
+          <div ref={headRef} className="mb-6 sm:mb-8">
             <h1
-              className={`text-3xl font-bold text-white transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`text-2xl sm:text-3xl font-bold text-white break-words transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 headShown ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
               }`}
             >
@@ -149,14 +149,14 @@ export default function PostList() {
           ) : visible.length === 0 ? (
             <p className="text-neutral-300">No posts found here yet.</p>
           ) : (
-            <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-5 sm:gap-x-6 gap-y-8 sm:gap-y-10 sm:grid-cols-2">
               {visible.map((post, i) => (
                 <PostCard key={post.slug} post={post} index={i} />
               ))}
             </div>
           )}
 
-          <Reveal className="mt-10">
+          <Reveal className="mt-8 sm:mt-10">
             <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
           </Reveal>
         </section>

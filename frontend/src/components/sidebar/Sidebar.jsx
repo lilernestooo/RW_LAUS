@@ -17,7 +17,7 @@ export default function Sidebar({ showBanner = true }) {
   const categories = cats.data?.data ?? [];
 
   return (
-    <aside ref={ref} className="relative z-10 lg:sticky">
+    <aside ref={ref} className="relative z-10 lg:sticky self-start min-w-0 w-full">
       {showBanner && <OnAirBanner />}
 
       <SectionTitle className={showBanner ? "mt-8" : ""}>Recent Comments</SectionTitle>
@@ -27,7 +27,7 @@ export default function Sidebar({ showBanner = true }) {
       <ul>
         {posts.map((p) => (
           <li key={p.slug} className={listItem}>
-            <Link to={`/${p.slug}`} className="block text-justify font-bold text-white hover:text-red-500">
+            <Link to={`/${p.slug}`} className="block text-left text-sm sm:text-base font-bold text-white transition-colors hover:text-red-500 break-words">
               {p.title}
             </Link>
           </li>

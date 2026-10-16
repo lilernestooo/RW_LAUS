@@ -111,9 +111,9 @@ export default function Post() {
         className="pointer-events-none fixed left-0 top-0 z-[60] h-1 w-full origin-left scale-x-0 bg-[#e60000]"
       />
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* key={slug} makes the animations replay when you open another post */}
-        <article key={slug} className="overflow-x-clip">
+        <article key={slug} className="min-w-0 w-full overflow-x-clip">
           {/* Breadcrumb */}
           <Reveal as="nav" from="left" className="mb-4 text-sm text-neutral-400">
             <Link to="/" className="hover:text-white">

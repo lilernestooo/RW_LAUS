@@ -9,6 +9,7 @@ import HomeAdmin from "./HomePage";
 import AboutAdmin from "./AboutPage";
 import ProgramsAdmin from "./ProgramsPage";
 import GalleryAdmin from "./GalleryPage";
+import logo from "../assets/banner/cropped-Banner.jpg";
 
 // ===== Auth =====
 const Ctx = createContext(null);
@@ -142,7 +143,9 @@ function AdminLayout() {
       <aside className={"adm-side" + (open ? " open" : "")}>
         <div className="adm-brand">
           <div className="adm-brand-main">
-            <div className="adm-logo">RW</div>
+            <div className="adm-logo">
+              <img src={logo} alt="RW 95.1 logo" />
+            </div>
             <div className="adm-brand-text">
               <strong>RW 95.1</strong>
               <small>Admin panel</small>

@@ -106,9 +106,9 @@ export default function Landing() {
         className="pointer-events-none fixed left-0 top-0 z-[60] h-1 w-full origin-left scale-x-0 bg-[#e60000]"
       />
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* Main content */}
-        <section>
+        <section className="min-w-0 w-full">
           {error && !data ? (
             <p className="text-neutral-300">
               Could not load posts. Make sure Apache and MySQL are running.
@@ -116,14 +116,14 @@ export default function Landing() {
           ) : loading && !data ? (
             <p className="text-neutral-300">Loading…</p>
           ) : (
-            <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-5 sm:gap-x-6 gap-y-8 sm:gap-y-10 sm:grid-cols-2">
               {visible.map((post, i) => (
                 <PostCard key={post.slug} post={post} index={i} />
               ))}
             </div>
           )}
 
-          <Reveal className="mt-10">
+          <Reveal className="mt-8 sm:mt-10">
             <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
           </Reveal>
         </section>
@@ -136,7 +136,7 @@ export default function Landing() {
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Back to top"
-            className="fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center bg-red-600 text-white transition-transform duration-300 hover:-translate-y-1 hover:bg-red-700"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center bg-red-600 text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 active:scale-95"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <polyline points="6,15 12,9 18,15" />

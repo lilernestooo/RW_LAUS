@@ -26,7 +26,7 @@ function PublicSite() {
   return (
     <>
       <Header onListenLive={() => navigate("/stream")} />
-      <main className="mx-auto max-w-[1244px] bg-[#111] p-6">
+      <main className="mx-auto w-full max-w-[1244px] bg-[#111] px-3 py-4 sm:px-6 sm:py-6">
         <PageLoader>
           <Routes>
             <Route path="/" element={<Landing />} />

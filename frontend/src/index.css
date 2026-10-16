@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
+html,
 body {
-  @apply m-0 bg-black font-sans text-white;
+  @apply m-0 p-0 bg-black font-sans text-white w-full;
+  overflow-x: clip;
 }
 
 /*pageloader.jsx*/
