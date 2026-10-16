@@ -15,10 +15,10 @@ export default function Search() {
   const results = data?.data ?? [];
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
-      <section>
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
+      <section className="min-w-0 w-full">
         <h1 className="mb-8 text-3xl font-bold text-white">
-          Search results for: <span className="text-red-500">{q}</span>
+          Search results for: <span className="text-white">{q}</span>
         </h1>
 
         {loading ? (

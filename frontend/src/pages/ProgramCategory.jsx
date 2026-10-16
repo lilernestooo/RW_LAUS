@@ -210,9 +210,9 @@ export default function ProgramCategory() {
         <span>{category?.title ?? "…"}</span>
       </nav>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* Main content */}
-        <section>
+        <section className="min-w-0 w-full">
           <h1
             ref={titleRef}
             className={`text-3xl font-bold text-white transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${

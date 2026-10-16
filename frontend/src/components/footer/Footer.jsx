@@ -38,16 +38,16 @@ export default function Footer() {
   const missed = posts.filter((p) => p.date).slice(0, 4);
 
   return (
-    <footer className="mx-auto max-w-[1244px]">
-      <div className="bg-[#1c1c1c] p-6">
+    <footer className="mx-auto w-full max-w-[1244px] overflow-hidden">
+      <div className="bg-[#1c1c1c] p-4 sm:p-6">
         {/* You may have missed */}
         <SectionTitle>You may have missed</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {missed.map((p) => (
-            <article key={p.slug}>
+            <article key={p.slug} className="min-w-0">
               <PostImage post={p} ratio="aspect-[8/5]" />
-              <h4 className="mt-3 text-justify font-bold leading-snug text-white">
-                <Link to={`/${p.slug}`} className="hover:text-red-500">
+              <h4 className="mt-3 text-left font-bold leading-snug text-white break-words">
+                <Link to={`/${p.slug}`} className="transition-colors hover:text-red-500">
                   {p.title}
                 </Link>
               </h4>
@@ -63,7 +63,7 @@ export default function Footer() {
         </div>
 
         {/* Contact info */}
-        <div className="mt-12 grid gap-8 md:grid-cols-2">
+        <div className="mt-8 sm:mt-12 grid gap-6 sm:gap-8 md:grid-cols-2">
           <ul className="list-disc pl-5 text-sm uppercase text-white marker:text-white">
             <li className={li}>For requests and greetings: text +63 919 264 4439</li>
             <li className={li}>

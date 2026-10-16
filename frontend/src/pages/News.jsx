@@ -347,9 +347,9 @@ export default function News() {
         <span>Events</span>
       </nav>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_345px]">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* Main content */}
-        <section className="min-w-0 overflow-x-clip">
+        <section className="min-w-0 w-full overflow-x-clip">
           <Reveal from="left">
             <h1 className="mb-6 text-3xl font-bold text-white">Events</h1>
           </Reveal>

@@ -29,9 +29,9 @@ export default function PostImage({ post, ratio = "aspect-[4/3]", natural = fals
         </span>
       )}
 
-      <div className="absolute bottom-2 left-2 flex gap-1">
+      <div className="absolute bottom-2.5 left-2.5 z-10 flex flex-wrap gap-1.5 max-w-[calc(100%-20px)]">
         {post.categories.map((c) => (
-          <span key={c} className="bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white">
+          <span key={c} className="bg-red-600 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
             {c}
           </span>
         ))}

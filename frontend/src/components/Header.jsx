@@ -46,41 +46,42 @@ export default function Header({ onListenLive }) {
   return (
     <header className="mx-auto w-full max-w-[1244px]">
       {/* Logo banner */}
-      <Link to="/" aria-label="RW 95.1 FM home" className="block">
+      <Link to="/" aria-label="RW 95.1 FM home" className="block w-full bg-black overflow-hidden">
         <img
           src={banner}
           alt="RW 95.1 FM - Keni na Ka'"
-          className="block h-[100px] w-full object-cover object-center sm:h-[125px] lg:h-[148px]"
+          className="block w-full h-auto aspect-[15/4] max-h-[148px] sm:max-h-[160px] lg:max-h-[180px] object-cover object-center"
         />
-        </Link>
+      </Link>
 
       {/* Nav bar */}
-      <nav className="relative bg-[#1a1a1a]">
-        <div className="flex h-[50px] items-center justify-between pl-6">
+      <nav className="relative bg-[#1a1a1a] w-full">
+        <div className="flex h-[50px] items-center justify-between pl-2 sm:pl-4 lg:pl-6">
           {/* Desktop links */}
-          <ul className="hidden items-center gap-8 lg:flex">
+          <ul className="hidden items-center gap-4 xl:gap-8 lg:flex">
             {links.map((l) => (
               <li key={l.to}>
-                  <NavLink
-                    to={l.to}
-                      className={({ isActive }) =>
-                        `relative text-[15px] font-bold text-white
-                        after:absolute after:-bottom-1 after:left-0 after:h-[3px] after:bg-red-600
-                        after:transition-all after:duration-200
-                        hover:after:w-1/2 ${isActive ? "after:w-1/2" : "after:w-0"}`
-                      }
-                  >
-                    {l.label}
-                  </NavLink>
+                <NavLink
+                  to={l.to}
+                  className={({ isActive }) =>
+                    `relative text-[14px] xl:text-[15px] font-bold text-white transition-colors hover:text-neutral-200
+                    after:absolute after:-bottom-1 after:left-0 after:h-[3px] after:bg-red-600
+                    after:transition-all after:duration-200
+                    hover:after:w-1/2 ${isActive ? "after:w-1/2" : "after:w-0"}`
+                  }
+                >
+                  {l.label}
+                </NavLink>
               </li>
             ))}
           </ul>
 
           {/* Mobile hamburger */}
           <button
-            className="text-2xl text-white lg:hidden"
+            className="flex h-[50px] w-10 items-center justify-center text-2xl text-white transition-colors hover:text-red-500 lg:hidden"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
+            aria-expanded={open}
           >
             {open ? "✕" : "☰"}
           </button>
@@ -90,7 +91,7 @@ export default function Header({ onListenLive }) {
             <div ref={searchRef} className="relative h-full">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="h-full px-5 text-white"
+                className="flex h-full w-10 sm:w-12 items-center justify-center text-white hover:text-red-500 transition-colors"
                 aria-label="Search"
                 aria-expanded={searchOpen}
               >
@@ -104,7 +105,7 @@ export default function Header({ onListenLive }) {
                 <form
                   onSubmit={submitSearch}
                   role="search"
-                  className="absolute right-0 top-full z-30 flex w-[325px] max-w-[90vw] gap-0 bg-[#1a1a1a] p-3.5 shadow-lg"
+                  className="absolute right-0 top-full z-40 flex w-[300px] max-w-[calc(100vw-24px)] gap-0 bg-[#1a1a1a] p-3 shadow-2xl border border-white/10"
                 >
                   <input
                     type="search"
@@ -112,11 +113,11 @@ export default function Header({ onListenLive }) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search ..."
-                    className="h-[38px] min-w-0 flex-1 bg-[#333] px-3 text-sm text-white outline-none placeholder:text-neutral-400"
+                    className="h-[38px] min-w-0 flex-1 bg-[#333] px-3 text-sm text-white outline-none placeholder:text-neutral-400 focus:ring-1 focus:ring-red-500"
                   />
                   <button
                     type="submit"
-                    className="h-[38px] bg-[#e60000] px-4 text-sm font-bold uppercase text-white hover:bg-red-700"
+                    className="h-[38px] bg-[#e60000] px-4 text-xs font-bold uppercase tracking-wider text-white hover:bg-red-700 shrink-0 transition-colors"
                   >
                     Search
                   </button>
@@ -126,14 +127,15 @@ export default function Header({ onListenLive }) {
 
             <button
               onClick={onListenLive}
-              className="flex h-full items-center text-[15px] font-bold text-white"
+              className="flex h-full items-center bg-[#e60000] text-[14px] sm:text-[15px] font-bold text-white transition-colors hover:bg-red-700"
+              aria-label="Listen Live"
             >
-              <span className="flex h-full w-12 items-center justify-center bg-[#b30000]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <span className="flex h-full w-11 sm:w-10 items-center justify-center bg-[#b30000] sm:bg-transparent">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5,3 19,12 5,21" />
                 </svg>
               </span>
-              <span className="flex h-full items-center bg-[#e60000] px-4">
+              <span className="hidden pr-4 sm:inline tracking-wider">
                 LISTEN LIVE
               </span>
             </button>
@@ -142,13 +144,17 @@ export default function Header({ onListenLive }) {
 
         {/* Mobile menu */}
         {open && (
-          <ul className="border-t border-white/10 lg:hidden">
+          <ul className="border-t border-white/10 bg-[#1a1a1a] lg:hidden">
             {links.map((l) => (
               <li key={l.to}>
                 <NavLink
                   to={l.to}
                   onClick={() => setOpen(false)}
-                  className="block px-6 py-3 text-[15px] font-bold text-white hover:text-red-500"
+                  className={({ isActive }) =>
+                    `block px-5 py-3 text-[15px] font-bold transition-colors ${
+                      isActive ? "text-red-500 bg-white/5" : "text-white hover:text-red-500 hover:bg-white/5"
+                    }`
+                  }
                 >
                   {l.label}
                 </NavLink>
