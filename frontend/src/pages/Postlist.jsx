@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { fetchPosts, fetchCategories, fetchArchives } from "../api/api";
 import useApi from "../hooks/useApi";
 import PostCard from "../components/post/PostCard";
@@ -42,9 +42,8 @@ function Reveal({ delay = 0, className = "", children }) {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        shown ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-      } ${className}`}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${shown ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+        } ${className}`}
       style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
     >
       {children}
@@ -71,6 +70,27 @@ export default function PostList() {
       ? list.find((c) => c.slug === slug)?.name ?? slug
       : list.find((a) => a.value === month)?.label ?? month
     : "";
+
+  // Parse archive year and month name (e.g. from "2019-02" or title "February 2019")
+  let archiveYear = "";
+  let archiveMonthName = "";
+  if (month) {
+    const parts = month.split("-");
+    if (parts.length === 2) {
+      archiveYear = parts[0];
+      const mNum = parseInt(parts[1], 10);
+      if (!isNaN(mNum) && mNum >= 1 && mNum <= 12) {
+        archiveMonthName = new Date(Number(archiveYear), mNum - 1, 1).toLocaleString("en-US", { month: "long" });
+      }
+    }
+    if (!archiveMonthName && title) {
+      const titleParts = title.trim().split(" ");
+      if (titleParts.length >= 2) {
+        archiveMonthName = titleParts[0];
+        if (!archiveYear) archiveYear = titleParts[1];
+      }
+    }
+  }
 
   const visible = posts.data?.data ?? [];
   const totalPages = posts.data?.meta.total_pages ?? 1;
@@ -123,6 +143,31 @@ export default function PostList() {
 
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         <section className="min-w-0 w-full">
+          {/* Breadcrumbs */}
+          <nav aria-label="Breadcrumb" className="mb-4 text-sm text-neutral-400">
+            <Link to="/" className="hover:text-white transition-colors">
+              Home
+            </Link>
+            <span className="mx-2 text-neutral-500">/</span>
+            {month ? (
+              <>
+                {archiveYear && (
+                  <>
+                    <span className="text-neutral-400">{archiveYear}</span>
+                    <span className="mx-2 text-neutral-500">/</span>
+                  </>
+                )}
+                <span className="text-neutral-200">{archiveMonthName || title}</span>
+              </>
+            ) : (
+              <>
+                <span className="text-neutral-400">Category</span>
+                <span className="mx-2 text-neutral-500">/</span>
+                <span className="text-neutral-200">{title}</span>
+              </>
+            )}
+          </nav>
+
           {/* Heading slides in, red line draws underneath */}
           <div ref={headRef} className="mb-6 sm:mb-8">
             <h1
@@ -130,8 +175,15 @@ export default function PostList() {
                 headShown ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
               }`}
             >
-              {slug ? "Category: " : "Archives: "}
-              <span className="text-red-500">{title}</span>
+              {slug ? (
+                <>
+                  Category: <span className="text-white">{title}</span>
+                </>
+              ) : (
+                <>
+                  Month: <span className="text-white">{archiveMonthName && archiveYear ? `${archiveMonthName} ${archiveYear}` : title}</span>
+                </>
+              )}
             </h1>
             <span
               className={`mt-3 block h-1 origin-left bg-[#e60000] transition-all delay-300 duration-700 ease-out ${
