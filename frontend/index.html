@@ -4,7 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/src/assets/banner/cropped-Banner.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>RW 95.1 FM – Keni na Ka'</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- Content Security Policy: restrict sources to only what the app actually uses -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: blob: http://localhost http://127.0.0.1 https://rw951.fm https://www.rw951.fm;
+      media-src 'self' blob: http://localhost http://127.0.0.1 https://rw951.fm https://www.rw951.fm;
+      frame-src https://www.google.com https://radioworld951fm.ismyradio.com;
+      connect-src 'self' http://localhost http://127.0.0.1 https://rw951.fm https://www.rw951.fm;
+    " />
+    <title>RW 95.1 FM – Keni na Ka'</title>
   </head>
   <body>
     <div id="root"></div>

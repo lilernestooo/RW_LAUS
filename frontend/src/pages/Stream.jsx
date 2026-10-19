@@ -188,6 +188,7 @@ export default function Stream() {
               className="h-[650px] w-full border-0"
               allow="autoplay; fullscreen"
               allowFullScreen
+              sandbox="allow-scripts allow-same-origin allow-presentation"
             />
           </Reveal>
         ) : (

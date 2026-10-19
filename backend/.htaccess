@@ -1,3 +1,40 @@
-<Files ".env">
+# ==============================================================================
+# Security Hardening for RW 95.1 FM Backend
+# ==============================================================================
+
+# 1. Disable directory browsing across all backend directories
+Options -Indexes
+
+# 2. Block access to hidden files and directories (.env, .git, .gitignore, etc.)
+<FilesMatch "^\.">
     Require all denied
-</Files>
+</FilesMatch>
+
+# 3. Block sensitive configuration, database dumps, logs, and backup files
+<FilesMatch "\.(env|sql|log|bak|swp|ini|conf|sh|old|orig|tmp|phps)$">
+    Require all denied
+</FilesMatch>
+
+# 4. HTTP Security Headers
+<IfModule mod_headers.c>
+    # Prevent this site from being embedded in iframes (clickjacking protection)
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME-type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Only send Referer header within same origin
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Basic XSS filter (for older browsers)
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Remove PHP version from headers
+    Header always unset X-Powered-By
+</IfModule>
+
+# 5. Disable PHP error display (errors should go to log, not the browser)
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>

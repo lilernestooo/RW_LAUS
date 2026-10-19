@@ -37,8 +37,9 @@ $name    = trim((string) ($in['name'] ?? ''));
 $email   = trim((string) ($in['email'] ?? ''));
 $message = trim((string) ($in['message'] ?? ''));
 
-if ($name === '' || mb_strlen($name) > 100) respond(['error' => 'Please enter your name.'], 422);
+if ($name === '' || mb_strlen($name) < 2 || mb_strlen($name) > 100) respond(['error' => 'Please enter your full name (2–100 characters).'], 422);
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 150) respond(['error' => 'Please enter a valid e-mail.'], 422);
+if (mb_strlen($message) < 10) respond(['error' => 'Your message is too short (at least 10 characters).'], 422);
 if (mb_strlen($message) > 2000) respond(['error' => 'Your message is too long (2000 characters max).'], 422);
 
 $pdo = db();

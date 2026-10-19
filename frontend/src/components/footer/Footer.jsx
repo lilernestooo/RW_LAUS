@@ -6,12 +6,12 @@ import PostImage from "../post/PostImage";
 const socials = [
   {
     label: "Facebook",
-    href: "http://www.facebook.com/RW951FM",
+    href: "https://www.facebook.com/RW951FM",
     icon: <path d="M13.5 22v-8.5h2.9l.5-3.5h-3.4V7.9c0-1 .3-1.7 1.7-1.7H17V3.1C16.7 3.1 15.7 3 14.6 3 12.2 3 10.5 4.5 10.5 7.2V10h-3v3.5h3V22h3z" fill="currentColor" />,
   },
   {
     label: "Instagram",
-    href: "http://www.instagram.com/rw95.1fm",
+    href: "https://www.instagram.com/rw95.1fm",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth="2">
         <rect x="3" y="3" width="18" height="18" rx="5" />

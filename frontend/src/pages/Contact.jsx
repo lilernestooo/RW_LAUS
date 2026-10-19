@@ -164,6 +164,7 @@ export default function Contact() {
                 loading="lazy"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
+                sandbox="allow-scripts allow-same-origin"
                 className="block aspect-square w-full border-0"
               />
 

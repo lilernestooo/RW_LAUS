@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { fetchPrograms } from "../api/api";
+import AudioPlayer from "../components/ui/AudioPlayer";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { TITLE_CONFIG } from "../config/titles";
 
@@ -41,9 +42,8 @@ function ProgramItem({ program }) {
 
   // Props for an element that fades in from a direction after a delay
   const appear = (hidden, delay, extra = "") => ({
-    className: `transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${extra} ${
-      shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : `${hidden} opacity-0`
-    }`,
+    className: `transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${extra} ${shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : `${hidden} opacity-0`
+      }`,
     style: { transitionDelay: shown ? `${delay}ms` : "0ms" },
   });
 
@@ -51,13 +51,15 @@ function ProgramItem({ program }) {
     <article ref={ref} className="grid gap-5 pt-8 first:pt-0 sm:grid-cols-[250px_1fr]">
       {/* Image: slides in, then zooms with a shine and red bar on hover */}
       <div {...appear("-translate-x-12 scale-95", 0)}>
-        <div className="group relative aspect-square w-full max-w-[250px] overflow-hidden bg-neutral-900 transition-shadow duration-500 hover:shadow-[0_18px_40px_-10px_rgba(230,0,0,0.55)]">
+        <div className="group relative aspect-square w-full max-w-[250px] overflow-hidden bg-neutral-900 transition-shadow duration-500 hover:shadow-[0_18px_40px_-10px_rgba(230,0,0,0.55)] select-none">
           {image ? (
             <img
               src={image}
               alt={title}
               loading="lazy"
-              className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
+              draggable="false"
+              onContextMenu={(e) => e.preventDefault()}
+              className="pointer-events-none h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-neutral-500">
@@ -70,6 +72,11 @@ function ProgramItem({ program }) {
 
           {/* Red bar that grows along the bottom edge */}
           <span className="absolute bottom-0 left-0 h-1 w-0 bg-[#e60000] transition-all duration-500 ease-out group-hover:w-full" />
+
+          {/* Copyright watermark overlay */}
+          <span className="pointer-events-none absolute bottom-1 right-1 text-[10px] font-semibold text-white/50 select-none">
+            © RW 95.1 FM
+          </span>
         </div>
       </div>
 
@@ -98,7 +105,13 @@ function ProgramItem({ program }) {
 
         {audio && (
           <div {...appear("translate-y-6", 450, "mt-5")}>
-            <audio controls preload="none" src={audio} className="w-full" />
+            <AudioPlayer src={audio} />
+            <p className="mt-1.5 flex items-center gap-1 text-xs text-neutral-500">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+              </svg>
+              © RW 95.1 FM — For listening only. Unauthorized download or redistribution is prohibited.
+            </p>
           </div>
         )}
       </div>
@@ -106,9 +119,8 @@ function ProgramItem({ program }) {
       {/* Divider line that draws itself */}
       <span
         aria-hidden="true"
-        className={`col-span-full mt-3 block h-px origin-left bg-white/80 transition-transform duration-1000 ease-out ${
-          shown ? "scale-x-100" : "scale-x-0"
-        }`}
+        className={`col-span-full mt-3 block h-px origin-left bg-white/80 transition-transform duration-1000 ease-out ${shown ? "scale-x-100" : "scale-x-0"
+          }`}
         style={{ transitionDelay: shown ? "500ms" : "0ms" }}
       />
     </article>
@@ -218,18 +230,16 @@ export default function ProgramCategory() {
         <section className="min-w-0 w-full">
           <h1
             ref={titleRef}
-            className={`text-3xl font-bold text-white transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-              titleShown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
-            }`}
+            className={`text-3xl font-bold text-white transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${titleShown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+              }`}
           >
             {category?.title ?? "Programs"}
           </h1>
 
           {/* Red accent line that draws itself under the title */}
           <span
-            className={`mb-10 mt-3 block h-1 w-24 origin-left bg-[#e60000] transition-transform delay-300 duration-700 ease-out ${
-              titleShown ? "scale-x-100" : "scale-x-0"
-            }`}
+            className={`mb-10 mt-3 block h-1 w-24 origin-left bg-[#e60000] transition-transform delay-300 duration-700 ease-out ${titleShown ? "scale-x-100" : "scale-x-0"
+              }`}
           />
 
           {state === "loading" && <p className="text-neutral-400">Loading…</p>}
