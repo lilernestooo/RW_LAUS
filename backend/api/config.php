@@ -40,8 +40,13 @@ define('UPLOAD_TOKEN', env('UPLOAD_TOKEN', ''));   // set in .env; empty = uploa
 const UPLOAD_DIR    = __DIR__ . '/../uploads';
 const UPLOAD_MAX_MB = 8;                           // per image
 
-// ---- CORS (Vite dev server). Tighten for production. ----
-$allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+// ---- CORS (Vite dev server + production). ----
+$allowedOrigins = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://rw951.fm',        // production domain
+    'https://www.rw951.fm',    // www variant
+];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if (in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: $origin");
@@ -50,6 +55,7 @@ if (in_array($origin, $allowedOrigins, true)) {
 header('Access-Control-Allow-Headers: Content-Type, X-Upload-Token');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Content-Type: application/json; charset=utf-8');
+header('X-Robots-Tag: noindex, nofollow');  // hide API from search engines
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(204);

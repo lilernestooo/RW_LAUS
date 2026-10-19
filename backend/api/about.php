@@ -5,8 +5,9 @@ $pdo = db();   // config.php gives the connection through db()
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', '0');
 set_exception_handler(function (Throwable $e) {
+  error_log('about.php exception: ' . $e->getMessage());
   http_response_code(500);
-  echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
+  echo json_encode(['error' => 'A server error occurred. Please try again later.']);
 });
 
 function out($data, int $code = 200) { http_response_code($code); echo json_encode($data); exit; }
