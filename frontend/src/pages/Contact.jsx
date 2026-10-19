@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { sendContact } from "../api/api";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 /* ---------- Reveal-on-scroll helper ----------
    direction: "up" | "left" | "right" | "none"
@@ -93,6 +95,7 @@ const field =
   "w-full border border-white/10 bg-[#222] px-3 py-2.5 text-white outline-none transition focus:border-red-600 focus:bg-[#2a2a2a] text-base";
 
 export default function Contact() {
+  useDocumentTitle(TITLE_CONFIG.pages.contact);
   const [form, setForm] = useState({ name: "", email: "", message: "", website: "" }); // website = hidden spam trap
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({ type: "", text: "" }); // type: "", "sending", "ok", "error"

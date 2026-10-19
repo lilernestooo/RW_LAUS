@@ -5,6 +5,8 @@ import useApi from "../hooks/useApi";
 import PostCard from "../components/post/PostCard";
 import Pagination from "../components/post/Pagination";
 import Sidebar from "../components/sidebar/Sidebar";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 const PAGE_SIZE = 10;
 
@@ -53,6 +55,7 @@ function Reveal({ delay = 0, className = "", children }) {
 }
 
 export default function Landing() {
+  useDocumentTitle(TITLE_CONFIG.pages.landing, { exact: true });
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(Number(searchParams.get("page")) || 1, 1);
 
