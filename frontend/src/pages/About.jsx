@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { fetchAbout } from "../api/api";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 const intro = [
   "Since 1995, RW 95.1 FM, a flagship station of Radioworld Broadcasting Corporation under the LausGroup of Companies, is broadcasting from Dau, Mabalacat, Pampanga. Our legacy of three decades is built on delivering cutting-edge news and timeless music, seamlessly blending the classic hits of the 60s, 70s, and 80s with today’s chart-toppers.",
@@ -255,6 +257,7 @@ function ProgramChips({ items }) {
 }
 
 export default function About() {
+  useDocumentTitle(TITLE_CONFIG.pages.about);
   const [showTop, setShowTop] = useState(false);
 
   const about = useAbout();

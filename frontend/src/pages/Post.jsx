@@ -7,6 +7,7 @@ import PostGallery from "../components/post/PostGallery";
 import RelatedPostCard from "../components/post/RelatedPostCard";
 import CommentForm from "../components/post/CommentForm";
 import Sidebar from "../components/sidebar/Sidebar";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 // Returns [ref, shown]: shown flips to true once the element scrolls into view
 function useReveal(threshold = 0.15) {
@@ -62,6 +63,7 @@ function Reveal({ as: Tag = "div", from = "up", delay = 0, className = "", child
 export default function Post() {
   const { slug } = useParams();
   const { data, loading, error } = useApi(() => fetchPost(slug), [slug]);
+  useDocumentTitle(data?.data?.title);
   const barRef = useRef(null); // red reading-progress bar at the top of the screen
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import useApi from "../hooks/useApi";
 import PostCard from "../components/post/PostCard";
 import Pagination from "../components/post/Pagination";
 import Sidebar from "../components/sidebar/Sidebar";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const PAGE_SIZE = 10;
 
@@ -91,6 +92,12 @@ export default function PostList() {
       }
     }
   }
+
+  const displayTitle = slug
+    ? (title || slug)
+    : (archiveMonthName && archiveYear ? `${archiveMonthName} ${archiveYear}` : (title || month || "Archive"));
+
+  useDocumentTitle(displayTitle);
 
   const visible = posts.data?.data ?? [];
   const totalPages = posts.data?.meta.total_pages ?? 1;

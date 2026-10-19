@@ -3,10 +3,14 @@ import { fetchPosts } from "../api/api";
 import useApi from "../hooks/useApi";
 import PostCard from "../components/post/PostCard";
 import Sidebar from "../components/sidebar/Sidebar";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 export default function Search() {
   const [params] = useSearchParams();
   const q = (params.get("s") || "").trim();
+
+  useDocumentTitle(q ? `Search Results for “${q}”` : TITLE_CONFIG.pages.search);
 
   const { data, loading, error } = useApi(
     () => (q ? fetchPosts({ q, per_page: 50 }) : Promise.resolve({ data: [] })),

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { fetchPrograms } from "../api/api";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 // Shown until the database answers (or if it can't be reached)
 const fallback = [
@@ -107,6 +109,7 @@ function ProgramCard({ title, to, background, index }) {
 }
 
 export default function Programs() {
+  useDocumentTitle(TITLE_CONFIG.pages.programs);
   const [showTop, setShowTop] = useState(false);
   const [cards, setCards] = useState(fallback);
 

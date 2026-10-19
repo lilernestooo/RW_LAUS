@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { fetchPrograms } from "../api/api";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 // Gives an element a one-time "reveal" the first time it scrolls into view
 function useReveal() {
@@ -117,6 +119,7 @@ export default function ProgramCategory() {
   const { slug } = useParams();
   const [category, setCategory] = useState(null);
   const [state, setState] = useState("loading"); // loading | ready | missing | error
+  useDocumentTitle(category?.title || (state === "ready" ? TITLE_CONFIG.pages.programs : null));
   const [showTop, setShowTop] = useState(false);
   const barRef = useRef(null); // red progress bar at the top of the screen
   const [titleRef, titleShown] = useReveal();

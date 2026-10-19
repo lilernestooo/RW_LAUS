@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 /* ---------- Reveal-on-scroll helper ----------
    direction: "up" | "left" | "right" | "none"
@@ -111,6 +113,7 @@ function Equalizer({ playing }) {
 }
 
 export default function Stream() {
+  useDocumentTitle(TITLE_CONFIG.pages.stream);
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);

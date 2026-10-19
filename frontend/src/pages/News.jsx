@@ -5,6 +5,8 @@ import useApi from "../hooks/useApi";
 import { formatDate } from "../utils/formatDate";
 import Sidebar from "../components/sidebar/Sidebar";
 import OnAirBanner from "../components/sidebar/OnAirBanner";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 const PAGE_SIZE = 10;
 const AUTHOR = "l@usrw951";
@@ -327,6 +329,7 @@ function AnimatedBanner() {
 }
 
 export default function News() {
+  useDocumentTitle(TITLE_CONFIG.pages.news);
   const perView = usePerView();
   const [showTop, setShowTop] = useState(false);
   const { data } = useApi(() => fetchPosts({ page: 1, per_page: PAGE_SIZE }), []);

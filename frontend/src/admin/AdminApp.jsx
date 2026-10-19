@@ -10,6 +10,7 @@ import AboutAdmin from "./AboutPage";
 import ProgramsAdmin from "./ProgramsPage";
 import GalleryAdmin from "./GalleryPage";
 import logo from "../assets/banner/cropped-Banner.jpg";
+import { TITLE_CONFIG } from "../config/titles";
 
 // ===== Auth =====
 const Ctx = createContext(null);
@@ -226,7 +227,7 @@ export default function AdminApp() {
     meta.content = "noindex,nofollow";
     document.head.appendChild(meta);
     const prev = document.title;
-    document.title = "RW 95.1 Admin";
+    document.title = TITLE_CONFIG.admin?.base || "RW 95.1 Admin";
     return () => { meta.remove(); document.title = prev; };
   }, []);
 

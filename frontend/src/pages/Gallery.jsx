@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchGallery } from "../api/api";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 // Placeholder tiles (grey and red only), shown when no photos have been uploaded yet
 const backgrounds = [
@@ -119,6 +121,7 @@ function ScatterPhoto({ item, index, onOpen }) {
 }
 
 export default function Gallery() {
+  useDocumentTitle(TITLE_CONFIG.pages.gallery);
   const [photos, setPhotos] = useState(null); // null until the first answer arrives
   const [failed, setFailed] = useState(false);
   const [active, setActive] = useState(null);

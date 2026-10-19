@@ -5,6 +5,8 @@ import Sidebar from "../components/sidebar/Sidebar";
 import SectionTitle from "../components/ui/SectionTitle";
 import { fetchHome } from "../api/api";
 import useApi from "../hooks/useApi";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { TITLE_CONFIG } from "../config/titles";
 
 // Shown until you upload real award photos in the admin page
 const placeholderAwards = [
@@ -320,6 +322,7 @@ function AwardsCarousel({ awards }) {
 }
 
 export default function Home() {
+  useDocumentTitle(TITLE_CONFIG.pages.home);
   const [showTop, setShowTop] = useState(false);
 
   // Hero image, award photos and video uploaded in the admin page
