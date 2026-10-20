@@ -51,9 +51,8 @@ function Reveal({ as: Tag = "div", direction = "up", delay = 0, className = "", 
     <Tag
       ref={ref}
       style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
-      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
-        shown ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${hiddenShift}`
-      } ${className}`}
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${shown ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${hiddenShift}`
+        } ${className}`}
       {...rest}
     >
       {children}
@@ -177,7 +176,7 @@ export default function Stream() {
         </Reveal>
 
         <Reveal as="h1" delay={100} className="mb-6 text-3xl font-bold text-white sm:text-4xl">
-          RW95.1 Stream Player
+          RW95.1 STREAM PLAYER
         </Reveal>
 
         {EMBED_URL ? (
@@ -198,9 +197,8 @@ export default function Stream() {
               {/* Artwork with spinning ring */}
               <Reveal direction="left" delay={350} className="relative mx-auto h-32 w-32 shrink-0 sm:mx-0">
                 <div
-                  className={`absolute inset-0 rounded-full border-4 border-dashed border-red-600/70 ${
-                    playing ? "animate-[spin_8s_linear_infinite]" : ""
-                  }`}
+                  className={`absolute inset-0 rounded-full border-4 border-dashed border-red-600/70 ${playing ? "animate-[spin_8s_linear_infinite]" : ""
+                    }`}
                 />
                 <div className="absolute inset-3 flex flex-col items-center justify-center rounded-full bg-gradient-to-br from-[#2a2a2a] to-black text-center">
                   <span className="text-2xl font-extrabold italic text-amber-400">RW</span>

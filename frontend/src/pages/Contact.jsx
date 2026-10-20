@@ -52,9 +52,8 @@ function Reveal({ as: Tag = "div", direction = "up", delay = 0, className = "", 
     <Tag
       ref={ref}
       style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
-      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
-        shown ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${hiddenShift}`
-      } ${className}`}
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${shown ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${hiddenShift}`
+        } ${className}`}
       {...rest}
     >
       {children}
@@ -151,7 +150,7 @@ export default function Contact() {
         </Reveal>
 
         <Reveal as="h1" delay={100} className="mb-6 text-3xl font-bold text-white sm:text-4xl">
-          Contact Us
+          CONTACT US
         </Reveal>
 
         <div className="grid gap-8 md:grid-cols-[1.3fr_1fr]">

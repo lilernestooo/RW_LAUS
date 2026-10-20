@@ -56,9 +56,8 @@ function Reveal({ from = "up", delay = 0, className = "", children }) {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : hidden[from]
-      } ${className}`}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : hidden[from]
+        } ${className}`}
       style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
     >
       {children}
@@ -72,9 +71,8 @@ function GrowRule({ className = "" }) {
   return (
     <hr
       ref={ref}
-      className={`origin-left border-t border-white/80 transition-transform duration-1000 ease-out ${
-        shown ? "scale-x-100" : "scale-x-0"
-      } ${className}`}
+      className={`origin-left border-t border-white/80 transition-transform duration-1000 ease-out ${shown ? "scale-x-100" : "scale-x-0"
+        } ${className}`}
     />
   );
 }
@@ -117,9 +115,8 @@ function Lightbox({ photos, index, onClose, onChange }) {
       aria-modal="true"
       aria-label="Award photo"
       onClick={onClose}
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 px-4 py-6 backdrop-blur-md transition-opacity duration-300 ${
-        open ? "opacity-100" : "opacity-0"
-      }`}
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 px-4 py-6 backdrop-blur-md transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"
+        }`}
     >
       {/* Close */}
       <button
@@ -140,9 +137,8 @@ function Lightbox({ photos, index, onClose, onChange }) {
       {/* Photo card pops in */}
       <figure
         onClick={(e) => e.stopPropagation()}
-        className={`relative max-w-4xl border-t-4 border-red-600 bg-neutral-900 shadow-2xl shadow-black transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          open ? "translate-y-0 scale-100 opacity-100" : "translate-y-6 scale-90 opacity-0"
-        }`}
+        className={`relative max-w-4xl border-t-4 border-red-600 bg-neutral-900 shadow-2xl shadow-black transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${open ? "translate-y-0 scale-100 opacity-100" : "translate-y-6 scale-90 opacity-0"
+          }`}
       >
         <div className="flex min-h-[200px] min-w-[200px] items-center justify-center">
           <img
@@ -150,9 +146,8 @@ function Lightbox({ photos, index, onClose, onChange }) {
             src={photo.url}
             alt={photo.caption || "Award"}
             onLoad={() => setLoaded(true)}
-            className={`max-h-[68vh] w-auto max-w-full object-contain transition-all duration-500 ${
-              loaded ? "scale-100 opacity-100" : "scale-95 opacity-0"
-            }`}
+            className={`max-h-[68vh] w-auto max-w-full object-contain transition-all duration-500 ${loaded ? "scale-100 opacity-100" : "scale-95 opacity-0"
+              }`}
           />
         </div>
         {photo.caption && (
@@ -187,9 +182,8 @@ function Lightbox({ photos, index, onClose, onChange }) {
                 key={p.id}
                 onClick={() => onChange(i)}
                 aria-label={`Show photo ${i + 1}`}
-                className={`h-14 w-14 shrink-0 overflow-hidden border-2 transition-all duration-300 ${
-                  i === index ? "scale-110 border-red-500" : "border-transparent opacity-50 hover:opacity-100"
-                }`}
+                className={`h-14 w-14 shrink-0 overflow-hidden border-2 transition-all duration-300 ${i === index ? "scale-110 border-red-500" : "border-transparent opacity-50 hover:opacity-100"
+                  }`}
               >
                 <img src={p.url} alt="" className="h-full w-full object-cover" />
               </button>
@@ -269,9 +263,8 @@ function AwardsCarousel({ awards }) {
               </>
             ) : (
               <span
-                className={`p-6 transition-all duration-700 ${
-                  i === index ? "translate-y-0 opacity-100 delay-300" : "translate-y-3 opacity-0"
-                }`}
+                className={`p-6 transition-all duration-700 ${i === index ? "translate-y-0 opacity-100 delay-300" : "translate-y-3 opacity-0"
+                  }`}
               >
                 {a.caption}
               </span>
@@ -305,9 +298,8 @@ function AwardsCarousel({ awards }) {
                 key={a.id}
                 onClick={() => setIndex(i)}
                 aria-label={`Go to slide ${i + 1}`}
-                className={`h-3 rounded-full transition-all duration-500 ${
-                  i === index ? "w-8 bg-red-500" : "w-3 bg-white/40 hover:bg-white/70"
-                }`}
+                className={`h-3 rounded-full transition-all duration-500 ${i === index ? "w-8 bg-red-500" : "w-3 bg-white/40 hover:bg-white/70"
+                  }`}
               />
             ))}
           </div>
@@ -348,15 +340,14 @@ export default function Home() {
         {/* Main content */}
         <section className="min-w-0 w-full overflow-x-clip">
           <Reveal from="left">
-            <h1 className="mb-6 text-3xl font-bold text-white">Homepage</h1>
+            <h1 className="mb-6 text-3xl font-bold text-white">HOME PAGE</h1>
           </Reveal>
 
           {/* Hero image placeholder */}
           <Reveal from="zoom" delay={100}>
             <div
-              className={`group relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden text-neutral-500 ${
-                home?.hero ? "bg-black" : "border-2 border-dashed border-neutral-600 bg-neutral-900"
-              }`}
+              className={`group relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden text-neutral-500 ${home?.hero ? "bg-black" : "border-2 border-dashed border-neutral-600 bg-neutral-900"
+                }`}
             >
               {home?.hero ? (
                 <img src={home.hero} alt="RW 95.1 FM" className="h-full w-full object-cover" />

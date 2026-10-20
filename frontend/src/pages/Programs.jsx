@@ -40,9 +40,8 @@ function ProgramCard({ title, to, background, index }) {
     // Outer wrapper handles the entrance, inner card handles hover
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        shown ? "translate-y-0 scale-100 opacity-100" : "translate-y-10 scale-95 opacity-0"
-      }`}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${shown ? "translate-y-0 scale-100 opacity-100" : "translate-y-10 scale-95 opacity-0"
+        }`}
       style={{ transitionDelay: shown ? `${index * 150}ms` : "0ms" }}
     >
       <div className="group relative flex min-h-[233px] flex-col justify-center overflow-hidden bg-gradient-to-b from-black via-neutral-800 to-neutral-900 px-3 py-8 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_18px_40px_-10px_rgba(230,0,0,0.55)] sm:px-4">
@@ -131,7 +130,7 @@ export default function Programs() {
           last = snapshot;
           setCards(next);
         })
-        .catch(() => {}); // keep what is on screen
+        .catch(() => { }); // keep what is on screen
     };
 
     const refresh = () => { if (!document.hidden) load(); };
@@ -166,7 +165,7 @@ export default function Programs() {
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* Main content */}
         <section className="min-w-0 w-full">
-          <h1 className="mb-16 text-3xl font-bold text-white">Programs</h1>
+          <h1 className="mb-16 text-3xl font-bold text-white">PROGRAMS</h1>
 
           <div className="grid gap-4 sm:grid-cols-2">
             {cards.map((p, i) => (
