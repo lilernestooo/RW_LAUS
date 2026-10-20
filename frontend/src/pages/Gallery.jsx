@@ -83,14 +83,14 @@ function ScatterPhoto({ item, index, onOpen }) {
 
   const style = shown
     ? {
-        opacity: 1,
-        transform: "translate(0, 0) rotate(0deg) scale(1)",
-        transitionDelay: `${(index % 3) * 120}ms`,
-      }
+      opacity: 1,
+      transform: "translate(0, 0) rotate(0deg) scale(1)",
+      transitionDelay: `${(index % 3) * 120}ms`,
+    }
     : {
-        opacity: 0,
-        transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`,
-      };
+      opacity: 0,
+      transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`,
+    };
 
   return (
     <button
@@ -221,7 +221,7 @@ export default function Gallery() {
         <span className="text-neutral-300">Gallery</span>
       </nav>
 
-      <h1 className="mb-6 text-3xl font-bold text-white sm:text-4xl">Gallery</h1>
+      <h1 className="mb-6 text-3xl font-bold text-white sm:text-4xl">GALLERY</h1>
 
       {photos === null && !failed && <p className="text-neutral-400">Loading…</p>}
 

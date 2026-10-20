@@ -60,9 +60,8 @@ function Reveal({ from = "up", delay = 0, className = "", children }) {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : hidden[from]
-      } ${className}`}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${shown ? "translate-x-0 translate-y-0 scale-100 opacity-100" : hidden[from]
+        } ${className}`}
       style={{ transitionDelay: shown ? `${delay}ms` : "0ms" }}
     >
       {children}
@@ -111,9 +110,8 @@ function NewsCard({ post }) {
         {post.categories.map((c) => (
           <span
             key={c}
-            className={`px-2 py-0.5 text-[11px] font-bold uppercase text-white transition-transform duration-300 group-hover:-translate-y-0.5 ${
-              tagColor[c] || "bg-red-600"
-            }`}
+            className={`px-2 py-0.5 text-[11px] font-bold uppercase text-white transition-transform duration-300 group-hover:-translate-y-0.5 ${tagColor[c] || "bg-red-600"
+              }`}
           >
             {c}
           </span>
@@ -242,9 +240,8 @@ function PostCarousel({ slides, perView }) {
           }}
         >
           <div
-            className={`flex ${
-              animate ? "transition-transform duration-500 ease-in-out" : ""
-            }`}
+            className={`flex ${animate ? "transition-transform duration-500 ease-in-out" : ""
+              }`}
             style={{ transform: `translateX(-${(index * 100) / perView}%)` }}
             onTransitionEnd={onTransitionEnd}
           >
@@ -300,9 +297,8 @@ function PostCarousel({ slides, perView }) {
             key={s.slug}
             onClick={() => goTo(i)}
             aria-label={`Go to post ${i + 1}`}
-            className={`h-3 rounded-full transition-all duration-500 ${
-              i === index % n ? "w-8 bg-red-500" : "w-3 bg-white/80 hover:bg-white"
-            }`}
+            className={`h-3 rounded-full transition-all duration-500 ${i === index % n ? "w-8 bg-red-500" : "w-3 bg-white/80 hover:bg-white"
+              }`}
           />
         ))}
       </div>
@@ -354,7 +350,7 @@ export default function News() {
         {/* Main content */}
         <section className="min-w-0 w-full overflow-x-clip">
           <Reveal from="left">
-            <h1 className="mb-6 text-3xl font-bold text-white">Events</h1>
+            <h1 className="mb-6 text-3xl font-bold text-white">EVENTS</h1>
           </Reveal>
 
           {/* On Air banner (placeholder art until you have the real image) */}
