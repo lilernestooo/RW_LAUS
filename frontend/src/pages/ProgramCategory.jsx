@@ -106,12 +106,6 @@ function ProgramItem({ program }) {
         {audio && (
           <div {...appear("translate-y-6", 450, "mt-5")}>
             <AudioPlayer src={audio} />
-            <p className="mt-1.5 flex items-center gap-1 text-xs text-neutral-500">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-              </svg>
-              © RW 95.1 FM — For listening only. Unauthorized download or redistribution is prohibited.
-            </p>
           </div>
         )}
       </div>
