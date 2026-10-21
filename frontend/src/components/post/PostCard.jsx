@@ -90,13 +90,13 @@ export default function PostCard({ post, index = 0 }) {
 
       {/* Button: pops in, fills white from the left on hover */}
       <div {...appear("translate-y-4 scale-95 opacity-0", 450, "mt-4")}>
-        <Link
-          to={`/${post.slug}`}
-          className="group/btn relative inline-flex items-center justify-center overflow-hidden border border-white/60 px-4 py-2 text-xs sm:text-sm font-bold tracking-wider uppercase text-white transition-colors duration-300 hover:text-black"
-        >
-          <span className="absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover/btn:scale-x-100" />
-          <span className="relative">Read More</span>
-        </Link>
+      <Link
+        to={`/${post.slug}`}
+        className="group/btn relative inline-flex items-center justify-center overflow-hidden border border-white/60 px-4 py-2 text-xs sm:text-sm font-bold tracking-wider uppercase text-white transition-colors duration-300 hover:border-[#e60000]"
+      >
+        <span className="absolute inset-0 origin-left scale-x-0 bg-[#e60000] transition-transform duration-300 ease-out group-hover/btn:scale-x-100" />
+        <span className="relative">Read More</span>
+      </Link>
       </div>
     </article>
   );
