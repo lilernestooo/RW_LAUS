@@ -139,15 +139,15 @@ export default function Contact() {
   };
 
   return (
-    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
-      <section className="min-w-0 w-full">
-        <Reveal as="nav" direction="none" className="mb-4 text-sm text-neutral-400">
-          <Link to="/" className="hover:text-white">
-            Home
-          </Link>
-          {" / "}
-          <span className="text-neutral-300">Contact Us</span>
-        </Reveal>
+  <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
+    <section className="min-w-0 w-full">
+      <Reveal as="nav" direction="none" className="mb-4 text-sm text-neutral-400">
+        <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">
+          Home
+        </Link>
+        {" / "}
+        <span className="text-neutral-300 transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Contact Us</span>
+      </Reveal>
 
         <Reveal as="h1" delay={100} className="mb-6 text-3xl font-bold text-white sm:text-4xl">
           CONTACT US

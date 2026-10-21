@@ -150,30 +150,31 @@ export default function PostList() {
 
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         <section className="min-w-0 w-full">
-          {/* Breadcrumbs */}
-          <nav aria-label="Breadcrumb" className="mb-4 text-sm text-neutral-400">
-            <Link to="/" className="hover:text-white transition-colors">
-              Home
-            </Link>
-            <span className="mx-2 text-neutral-500">/</span>
-            {month ? (
-              <>
-                {archiveYear && (
-                  <>
-                    <span className="text-neutral-400">{archiveYear}</span>
-                    <span className="mx-2 text-neutral-500">/</span>
-                  </>
-                )}
-                <span className="text-neutral-200">{archiveMonthName || title}</span>
-              </>
-            ) : (
-              <>
-                <span className="text-neutral-400">Category</span>
-                <span className="mx-2 text-neutral-500">/</span>
-                <span className="text-neutral-200">{title}</span>
-              </>
-            )}
-          </nav>
+          
+        {/* Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-neutral-400">
+          <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">
+            Home
+          </Link>
+          <span className="mx-2 text-neutral-500">/</span>
+          {month ? (
+            <>
+              {archiveYear && (
+                <>
+                  <span className="cursor-pointer text-neutral-400 transition-colors duration-300 hover:text-[#e60000]">{archiveYear}</span>
+                  <span className="mx-2 text-neutral-500">/</span>
+                </>
+              )}
+              <span className="cursor-pointer text-neutral-200 transition-colors duration-300 hover:text-[#e60000]">{archiveMonthName || title}</span>
+            </>
+          ) : (
+            <>
+              <span className="cursor-pointer text-neutral-400 transition-colors duration-300 hover:text-[#e60000]">Category</span>
+              <span className="mx-2 text-neutral-500">/</span>
+              <span className="cursor-pointer text-neutral-200 transition-colors duration-300 hover:text-[#e60000]">{title}</span>
+            </>
+          )}
+        </nav>
 
           {/* Heading slides in, red line draws underneath */}
           <div ref={headRef} className="mb-6 sm:mb-8">

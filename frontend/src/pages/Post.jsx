@@ -116,17 +116,23 @@ export default function Post() {
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
         {/* key={slug} makes the animations replay when you open another post */}
         <article key={slug} className="min-w-0 w-full overflow-x-clip">
+          
           {/* Breadcrumb */}
           <Reveal as="nav" from="left" className="mb-4 text-sm text-neutral-400">
-            <Link to="/" className="hover:text-white">
+            <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">
               Home
             </Link>
             {" / "}
-            <Link to={`/category/${primaryCategory.toLowerCase()}`} className="hover:text-white">
+            <Link
+              to={`/category/${primaryCategory.toLowerCase()}`}
+              className="transition-colors duration-300 hover:text-[#e60000]"
+            >
               {primaryCategory}
             </Link>
             {" / "}
-            <span className="text-neutral-300">{post.title}</span>
+            <span className="text-neutral-300 transition-colors duration-300 hover:text-[#e60000] cursor-pointer">
+              {post.title}
+            </span>
           </Reveal>
 
           {/* Category tags: pop in one after another */}

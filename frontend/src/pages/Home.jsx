@@ -329,11 +329,11 @@ export default function Home() {
 
   return (
     <>
-      {/* Breadcrumb */}
+    {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-neutral-300">
-        <Link to="/" className="hover:text-white">Home</Link>
+        <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">Home</Link>
         <span className="mx-2">/</span>
-        <span>Homepage</span>
+        <span className="transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Homepage</span>
       </nav>
 
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">

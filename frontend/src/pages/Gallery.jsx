@@ -212,14 +212,14 @@ export default function Gallery() {
   };
 
   return (
-    <div className="overflow-x-clip">
-      <nav className="mb-4 text-sm text-neutral-400">
-        <Link to="/" className="hover:text-white">
-          Home
-        </Link>
-        {" / "}
-        <span className="text-neutral-300">Gallery</span>
-      </nav>
+  <div className="overflow-x-clip">
+    <nav className="mb-4 text-sm text-neutral-400">
+      <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">
+        Home
+      </Link>
+      {" / "}
+      <span className="text-neutral-300 transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Gallery</span>
+    </nav>
 
       <h1 className="mb-6 text-3xl font-bold text-white sm:text-4xl">GALLERY</h1>
 

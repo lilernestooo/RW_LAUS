@@ -155,11 +155,11 @@ export default function Programs() {
 
   return (
     <>
-      {/* Breadcrumb */}
+    {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-neutral-300">
-        <Link to="/homepage" className="hover:text-white">Home</Link>
+        <Link to="/homepage" className="transition-colors duration-300 hover:text-[#e60000]">Home</Link>
         <span className="mx-2">/</span>
-        <span>Programs</span>
+        <span className="transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Programs</span>
       </nav>
 
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
