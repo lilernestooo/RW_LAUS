@@ -341,7 +341,7 @@ export default function News() {
     <>
     {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-neutral-300">
-        <Link to="/homepage" className="transition-colors duration-300 hover:text-[#e60000]">Home</Link>
+        <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">Home</Link>
         <span className="mx-2">/</span>
         <span className="transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Events</span>
       </nav>

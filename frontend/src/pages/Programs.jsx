@@ -79,28 +79,28 @@ function ProgramCard({ title, to, background, index }) {
             {title}
           </h2>
 
-          <Link
-            to={to}
-            className="group/btn relative mt-4 block w-full overflow-hidden bg-[#e60000] px-4 py-3 text-center text-sm font-medium uppercase text-white transition-colors duration-300 hover:text-[#e60000] sm:text-base"
-          >
-            {/* White fill that slides in from the left */}
-            <span className="absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover/btn:scale-x-100" />
-            <span className="relative inline-flex items-center justify-center gap-2">
-              View Program
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="-ml-4 opacity-0 transition-all duration-300 group-hover/btn:ml-0 group-hover/btn:translate-x-1 group-hover/btn:opacity-100"
-              >
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <polyline points="14,6 20,12 14,18" />
-              </svg>
-            </span>
-          </Link>
+            <Link
+              to={to}
+              className="group/btn relative mx-auto mt-4 flex w-fit items-center justify-center overflow-hidden border border-white/60 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors duration-300 hover:border-[#e60000] sm:text-sm"
+            >
+              {/* Red fill that slides in from the left */}
+              <span className="absolute inset-0 origin-left scale-x-0 bg-[#e60000] transition-transform duration-300 ease-out group-hover/btn:scale-x-100" />
+              <span className="relative inline-flex items-center justify-center gap-2">
+                View Program
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  className="-ml-4 opacity-0 transition-all duration-300 group-hover/btn:ml-0 group-hover/btn:translate-x-1 group-hover/btn:opacity-100"
+                >
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <polyline points="14,6 20,12 14,18" />
+                </svg>
+              </span>
+            </Link>
         </div>
       </div>
     </div>
@@ -157,7 +157,7 @@ export default function Programs() {
     <>
     {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-neutral-300">
-        <Link to="/homepage" className="transition-colors duration-300 hover:text-[#e60000]">Home</Link>
+        <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">Home</Link>
         <span className="mx-2">/</span>
         <span className="transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Programs</span>
       </nav>
