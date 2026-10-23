@@ -1,4 +1,4 @@
-// Talks to the PHP backend in XAMPP.
+// Talks to the PHP backend (Apache + MySQL80).
 const API = import.meta.env.VITE_API_URL ?? "http://localhost/RW_LAUS/backend/api";
 
 // Public reads (the website and the admin tables both use this)
@@ -55,6 +55,21 @@ export async function sendContact(payload) {
     err.status = res.status;
     throw err;
   }
+  return body;
+}
+
+// Comments (public) -> { data: [{ id, name, website, comment, created_at }] }
+export const fetchComments = (postId) => get("comments.php", { post_id: postId });
+
+// New comment (saved as "pending" until the admin approves it)
+export async function sendComment(payload) {
+  const res = await fetch(`${API}/comments.php`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "submit", ...payload }),
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(body?.error || `API ${res.status}`);
   return body;
 }
 
@@ -149,3 +164,11 @@ export const auth = {
   login: (username, password) => postJson("auth.php", { action: "login", username, password }),
   me: () => request("auth.php", { method: "GET" }),
 };
+
+// Comments (admin: these send the login token through request())
+export const adminListComments = (status = "all", page = 1) =>
+  postJson("comments.php", { action: "admin_list", status, page });
+export const adminSetCommentStatus = (id, status) =>
+  postJson("comments.php", { action: "set_status", id, status });
+export const adminDeleteComment = (id) =>
+  postJson("comments.php", { action: "delete", id });

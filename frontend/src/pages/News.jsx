@@ -14,8 +14,8 @@ const AUTOPLAY_MS = 4000;
 const SWIPE_PX = 50;
 
 const tagColor = {
-  Events: "bg-[#00b894]",
-  News: "bg-[#0090d6]",
+  Events: "bg-red-600",
+  News: "bg-red-600",
   Uncategorized: "bg-red-600",
 };
 
