@@ -172,3 +172,7 @@ export const adminSetCommentStatus = (id, status) =>
   postJson("comments.php", { action: "set_status", id, status });
 export const adminDeleteComment = (id) =>
   postJson("comments.php", { action: "delete", id });
+
+// Posts (admin): create a new post, then upload its images with upload.php
+export const adminCreatePost = (fields) => postJson("posts_admin.php", { action: "create", ...fields });
+export const adminDeletePost = (id) => postJson("posts_admin.php", { action: "delete", id });

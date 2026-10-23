@@ -1,16 +1,15 @@
 <?php
 /**
- * POST dates.php   (JSON body, header X-Upload-Token)
+ * POST dates.php   (JSON body, header X-Upload-Token = admin login token)
  *   {"dates": {"post-slug": "2018-11-06", "another-slug": ""}}
  * An empty string clears the date.
  */
-require __DIR__ . '/config.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth.php';   // gives us require_admin()
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') respond(['error' => 'Method not allowed'], 405);
 
-if (UPLOAD_TOKEN === '') respond(['error' => 'UPLOAD_TOKEN is not set in backend/.env'], 500);
-$token = $_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '';
-if (!hash_equals(UPLOAD_TOKEN, $token)) respond(['error' => 'Invalid upload token'], 401);
+require_admin();
 
 $body  = json_decode(file_get_contents('php://input'), true);
 $dates = is_array($body) ? ($body['dates'] ?? null) : null;
