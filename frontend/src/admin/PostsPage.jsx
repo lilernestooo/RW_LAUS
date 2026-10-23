@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AdminTable, ImagePicker, Modal, MONTH, report, toDate, toMonth, useToast } from "./UI";
-import { fetchAllPosts, get, postForm, postJson, uploadBatches } from "../api/api";
+import { AdminTable, Field, ImagePicker, Modal, MONTH, RowActions, report, toDate, toMonth, useToast } from "./UI";
+import {
+  adminCreatePost,
+  adminDeletePost,
+  fetchAllPosts,
+  fetchCategories,
+  get,
+  postForm,
+  postJson,
+  uploadBatches,
+} from "../api/api";
 
-// ===== Page 1: Posts (month, featured image, gallery for one post) =====
+// ===== Page 1: Posts (add a post, month, featured image, gallery for one post) =====
 const COLUMNS = [
   { title: "Image", data: "image", orderable: false, searchable: false, defaultContent: "" },
   { title: "Title", data: "title" },
@@ -15,6 +24,7 @@ export default function PostsAdmin() {
   const notify = useToast();
   const [posts, setPosts] = useState([]);
   const [slug, setSlug] = useState(null);
+  const [adding, setAdding] = useState(false);
 
   const load = useCallback(
     () => fetchAllPosts().then(setPosts).catch((e) => notify(e.message, "err")),
@@ -24,22 +34,177 @@ export default function PostsAdmin() {
 
   const selected = posts.find((p) => p.slug === slug);
 
+  const removePost = async (row) => {
+    if (!window.confirm(`Delete "${row.title}"?\n\nIts photos and comments are deleted too. This cannot be undone.`)) return;
+    try {
+      await adminDeletePost(row.id);
+      notify("Post deleted.");
+      setSlug(null);
+      await load();
+    } catch (e) {
+      notify(e.message, "err");
+    }
+  };
+
   return (
     <>
       <header className="adm-head">
         <h1>Posts</h1>
-        <p>Pick a post to change its month, featured image or gallery.</p>
+        <p>Add a new post, or pick an existing one to change its month, featured image or gallery. Use ✕ to delete a post.</p>
+        <div className="adm-actions">
+          <button className="adm-btn" onClick={() => setAdding(true)}>+ Add new post</button>
+        </div>
       </header>
       <AdminTable data={posts} columns={COLUMNS} options={OPTIONS} slots={{
         0: (img) => img ? <img className="adm-thumb" src={img} alt="" /> : <span className="adm-muted">none</span>,
-        3: (_, row) => <button className="adm-btn sm" onClick={() => setSlug(row.slug)}>Manage</button>,
+        3: (_, row) => (
+          <RowActions editLabel="Manage" onEdit={() => setSlug(row.slug)} onDelete={() => removePost(row)} />
+        ),
       }} />
       {selected && (
         <Modal wide title={selected.title} onClose={() => setSlug(null)}>
           <PostManager post={selected} onChanged={load} />
         </Modal>
       )}
+      {adding && (
+        <Modal wide title="Add new post" onClose={() => setAdding(false)}>
+          <NewPost onCreated={load} onClose={() => setAdding(false)} />
+        </Modal>
+      )}
     </>
+  );
+}
+
+// ----- Form for a brand new post -----
+function NewPost({ onCreated, onClose }) {
+  const notify = useToast();
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [body, setBody] = useState("");
+  const [month, setMonth] = useState("");
+  const [byline, setByline] = useState("");
+  const [aboutWriter, setAboutWriter] = useState("");
+  const [cats, setCats] = useState([]);
+  const [picked, setPicked] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState("");
+  const featRef = useRef(null);
+  const galRef = useRef(null);
+
+  useEffect(() => {
+    fetchCategories().then((r) => setCats(r.data || [])).catch((e) => notify(e.message, "err"));
+  }, [notify]);
+
+  const toggleCat = (id) =>
+    setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
+  const create = async () => {
+    if (!title.trim()) return notify("Please enter a title.", "err");
+    if (!excerpt.trim()) return notify("Please enter a short excerpt.", "err");
+    if (month && !MONTH.test(month)) return notify("Use the format YYYY-MM, for example 2026-10.", "err");
+
+    setBusy(true);
+    try {
+      const r = await adminCreatePost({
+        title: title.trim(),
+        slug: slug.trim(),
+        excerpt: excerpt.trim(),
+        body,
+        month,
+        byline,
+        about_writer: aboutWriter,
+        categories: picked,
+      });
+      const newSlug = r.data.slug;
+
+      // The post exists now. Add its pictures with the same endpoint the Manage window uses.
+      const feat = featRef.current?.files[0];
+      if (feat) {
+        setProgress("Uploading featured image…");
+        report(notify, await uploadBatches("upload.php", { slug: newSlug, type: "featured" }, "images[]", [feat]));
+      }
+      if (files.length) {
+        const g = await uploadBatches("upload.php", { slug: newSlug, type: "gallery" }, "images[]", files,
+          (b, n) => setProgress(`Uploading gallery batch ${b} of ${n}…`));
+        report(notify, g);
+      }
+
+      notify(`Post created: /${newSlug}`);
+      await onCreated();
+      onClose();
+    } catch (e) {
+      notify(e.message, "err");
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
+  };
+
+  return (
+    <div className="adm-stack">
+      <section>
+        <Field label="Title *" value={title} maxLength={255} autoFocus
+          onChange={(e) => setTitle(e.target.value)} />
+        <Field label="Link name (optional)" value={slug} maxLength={120}
+          hint="Leave empty to make it from the title, for example my-new-post."
+          onChange={(e) => setSlug(e.target.value)} />
+        <Field label="Short excerpt *" textarea rows={3} value={excerpt} maxLength={1000}
+          hint="Shown on the post cards."
+          onChange={(e) => setExcerpt(e.target.value)} />
+        <Field label="Post body" textarea rows={10} value={body}
+          hint="Separate paragraphs with a blank line. If empty, the excerpt is used."
+          onChange={(e) => setBody(e.target.value)} />
+      </section>
+
+      <section>
+        <h2>Publish month and year</h2>
+        <p className="adm-hint">The post appears under this month in Archives. You can change it later.</p>
+        <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
+      </section>
+
+      <section>
+        <h2>Categories</h2>
+        {!cats.length ? <p className="adm-muted">Loading…</p> : (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 18px" }}>
+            {cats.map((c) => (
+              <label key={c.id} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                <input type="checkbox" checked={picked.includes(c.id)} onChange={() => toggleCat(c.id)} />
+                {c.name}
+              </label>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <Field label="Byline (optional)" textarea rows={2} value={byline}
+          hint="One line per row, for example: By Jasmine Tizon"
+          onChange={(e) => setByline(e.target.value)} />
+        <Field label="About the writer (optional)" textarea rows={3} value={aboutWriter}
+          onChange={(e) => setAboutWriter(e.target.value)} />
+      </section>
+
+      <section>
+        <h2>Featured image</h2>
+        <p className="adm-hint">The main picture on the cards and at the top of the post.</p>
+        <input ref={featRef} type="file" accept="image/*" />
+      </section>
+
+      <section>
+        <h2>Gallery photos (optional)</h2>
+        <p className="adm-hint">JPG, PNG, WEBP or GIF, up to 8 MB each. You can choose many at once.</p>
+        <ImagePicker files={files} onChange={setFiles} inputRef={galRef} />
+      </section>
+
+      <div className="adm-actions">
+        <button className="adm-btn" disabled={busy} onClick={create}>
+          {busy ? progress || "Creating…" : "Create post"}
+        </button>
+        <button className="adm-btn plain" disabled={busy} onClick={onClose}>Cancel</button>
+      </div>
+    </div>
   );
 }
 
