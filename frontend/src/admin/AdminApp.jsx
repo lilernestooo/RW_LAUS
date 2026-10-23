@@ -9,6 +9,7 @@ import HomeAdmin from "./HomePage";
 import AboutAdmin from "./AboutPage";
 import ProgramsAdmin from "./ProgramsPage";
 import GalleryAdmin from "./GalleryPage";
+import CommentsAdmin from "./CommentsPage";
 import logo from "../assets/banner/cropped-Banner.jpg";
 import { TITLE_CONFIG } from "../config/titles";
 
@@ -100,6 +101,7 @@ const Icon = ({ d }) => (
 const ICONS = {
   posts: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6",
   dates: "M3 5h18v16H3z M3 10h18 M8 3v4 M16 3v4",
+  comments: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z M8 9h8 M8 13h5",
   home: "M3 11l9-8 9 8 M5 10v10h14V10",
   about: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 11v5 M12 8h.01",
   programs: "M3 9h18v11H3z M7 9l10-5 M8 14.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0 M16 13h2 M16 16h2",
@@ -114,6 +116,7 @@ const NAV = [
   { group: "Content", items: [
     { to: "/admin/posts", label: "Posts", icon: "posts" },
     { to: "/admin/dates", label: "Post dates", icon: "dates" },
+    { to: "/admin/comments", label: "Comments", icon: "comments" },
   ]},
   { group: "Pages", items: [
     { to: "/admin/home", label: "Homepage", icon: "home" },
@@ -209,6 +212,7 @@ function Gate() {
         <Route index element={<Navigate to="/admin/posts" replace />} />
         <Route path="posts" element={<PostsAdmin />} />
         <Route path="dates" element={<DatesAdmin />} />
+        <Route path="comments" element={<CommentsAdmin />} />
         <Route path="home" element={<HomeAdmin />} />
         <Route path="about" element={<AboutAdmin />} />
         <Route path="programs" element={<ProgramsAdmin />} />

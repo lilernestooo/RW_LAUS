@@ -238,7 +238,7 @@ export default function Post() {
           )}
 
           <Reveal>
-            <CommentForm />
+            <CommentForm postId={post.id} />
           </Reveal>
 
           {/* Related Stories: zoom in one after another */}
