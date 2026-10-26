@@ -98,6 +98,7 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "", website: "" }); // website = hidden spam trap
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({ type: "", text: "" }); // type: "", "sending", "ok", "error"
+  const [showSuccess, setShowSuccess] = useState(false); // pop-up after a successful send
 
   const set = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -128,6 +129,7 @@ export default function Contact() {
       });
       setForm({ name: "", email: "", message: "", website: "" });
       setStatus({ type: "ok", text: "Thank you! Your message has been sent." });
+      setShowSuccess(true);
     } catch (err) {
       // 422 = a field was rejected, 429 = too many messages: the server's own wording is clearer for the visitor
       const friendly = err.status === 422 || err.status === 429;
@@ -139,15 +141,15 @@ export default function Contact() {
   };
 
   return (
-  <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
-    <section className="min-w-0 w-full">
-      <Reveal as="nav" direction="none" className="mb-4 text-sm text-neutral-400">
-        <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">
-          Home
-        </Link>
-        {" / "}
-        <span className="text-neutral-300 transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Contact Us</span>
-      </Reveal>
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_345px] w-full min-w-0">
+      <section className="min-w-0 w-full">
+        <Reveal as="nav" direction="none" className="mb-4 text-sm text-neutral-400">
+          <Link to="/" className="transition-colors duration-300 hover:text-[#e60000]">
+            Home
+          </Link>
+          {" / "}
+          <span className="text-neutral-300 transition-colors duration-300 hover:text-[#e60000] cursor-pointer">Contact Us</span>
+        </Reveal>
 
         <Reveal as="h1" delay={100} className="mb-6 text-3xl font-bold text-white sm:text-4xl">
           CONTACT US
@@ -307,6 +309,42 @@ export default function Contact() {
           </form>
         </div>
       </section>
+
+      {/* Success pop-up */}
+      {showSuccess && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          onClick={() => setShowSuccess(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="success-title"
+        >
+          <div
+            className="w-full max-w-sm border-t-4 border-[#e60000] bg-[#1a1a1a] p-6 text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/20">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 id="success-title" className="mb-2 text-xl font-bold text-white">
+              Message Sent!
+            </h2>
+            <p className="mb-5 text-sm text-neutral-300">
+              Thank you for contacting us. We'll get back to you as soon as possible.
+            </p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setShowSuccess(false)}
+              className="w-full bg-[#e60000] px-6 py-3 text-sm font-bold uppercase text-white transition hover:bg-red-700"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       <Sidebar />
     </div>

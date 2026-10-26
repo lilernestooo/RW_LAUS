@@ -8,7 +8,7 @@ const COLUMNS = [
   { title: "Caption", data: "caption", orderable: false, defaultContent: "" },
   { title: "", data: null, orderable: false, searchable: false, defaultContent: "" },
 ];
-const OPTIONS = { ordering: false, pageLength: 25 };
+const OPTIONS = { ordering: false, pageLength: 10 };
 
 export default function GalleryAdmin() {
   const notify = useToast();

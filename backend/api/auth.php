@@ -29,10 +29,18 @@ function verify_token(string $token): ?array {
     return (is_array($data) && ($data['exp'] ?? 0) >= time()) ? $data : null;
 }
 
-// React sends the token in the same X-Upload-Token header the old page used.
+// React sends the token in the X-Upload-Token header.
 function current_admin(): ?array {
-    $t = $_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '';
-    return $t !== '' ? verify_token($t) : null;
+    $t = trim($_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '');
+    if ($t === '') return null;
+    $admin = verify_token($t);
+    if ($admin !== null) return $admin;
+
+    // Fallback: accept legacy static UPLOAD_TOKEN if configured
+    if (defined('UPLOAD_TOKEN') && UPLOAD_TOKEN !== '' && hash_equals(UPLOAD_TOKEN, $t)) {
+        return ['id' => 0, 'u' => 'admin_legacy', 'exp' => time() + 3600];
+    }
+    return null;
 }
 
 function require_admin(): array {
