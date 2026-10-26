@@ -10,7 +10,7 @@ import AboutAdmin from "./AboutPage";
 import ProgramsAdmin from "./ProgramsPage";
 import GalleryAdmin from "./GalleryPage";
 import CommentsAdmin from "./CommentsPage";
-import logo from "../assets/banner/cropped-Banner.jpg";
+import logo from "../assets/banner/cropped-NewBanner.jpg";
 import { TITLE_CONFIG } from "../config/titles";
 
 // ===== Auth =====
