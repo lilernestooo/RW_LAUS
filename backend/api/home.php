@@ -62,9 +62,8 @@ if ($method === 'GET') {
 if ($method !== 'POST') respond(['error' => 'Method not allowed'], 405);
 
 // ---------- Auth ----------
-if (UPLOAD_TOKEN === '') respond(['error' => 'UPLOAD_TOKEN is not set in backend/.env'], 500);
-$token = $_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '';
-if (!hash_equals(UPLOAD_TOKEN, $token)) respond(['error' => 'Invalid upload token'], 401);
+require_once __DIR__ . '/auth.php';
+require_admin();
 
 if (empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
     respond(['error' => 'Upload too large for the server (php.ini post_max_size). Try a smaller file.'], 413);

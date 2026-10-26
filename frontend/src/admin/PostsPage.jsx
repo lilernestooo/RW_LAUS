@@ -324,7 +324,7 @@ const DATE_COLUMNS = [
   { title: "Post", data: "title" },
   { title: "Month and year", data: "date", defaultContent: "" },
 ];
-const DATE_OPTIONS = { pageLength: 25, order: [[0, "asc"]] };
+const DATE_OPTIONS = { pageLength: 10, order: [[0, "asc"]] };
 
 // Each cell keeps its own value and also reports it to `pending`,
 // so typed values survive paging and sorting in the table.

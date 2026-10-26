@@ -1,6 +1,25 @@
-# Uploaded files must never run as code, and the folder must not be browsable.
-Options -Indexes
+# ==============================================================================
+# Security: Uploaded files must never execute as code
+# ==============================================================================
+Options -Indexes -ExecCGI
 
-<FilesMatch "\.(php|phtml|php3|php4|php5|phps|phar)$">
+# Deny access to any executable script files
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|inc|cgi|pl|py|sh|asp|aspx|exe|bat|cmd)$">
     Require all denied
 </FilesMatch>
+
+# Disable PHP engine if mod_php is present
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Set default content type handling
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

@@ -4,6 +4,17 @@
  * Place the whole rw-backend folder in C:\xampp\htdocs\
  */
 
+// Prevent direct browser execution of config.php
+if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit(json_encode(['error' => 'Direct access forbidden']));
+}
+
+// Security: Never display raw errors or stack traces to clients in production
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
 // ---- Load secrets from backend/.env (plain KEY=value lines) ----
 function load_env(string $file): array {
     if (!is_file($file)) return [];
@@ -40,13 +51,15 @@ define('UPLOAD_TOKEN', env('UPLOAD_TOKEN', ''));   // set in .env; empty = uploa
 const UPLOAD_DIR    = __DIR__ . '/../uploads';
 const UPLOAD_MAX_MB = 8;                           // per image
 
-// ---- CORS (Vite dev server + production). ----
-$allowedOrigins = [
+// ---- CORS (Vite dev server + production) ----
+$envOrigins = array_filter(array_map('trim', explode(',', env('ALLOWED_ORIGINS', ''))));
+$allowedOrigins = array_merge([
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'https://rw951.fm',        // production domain
     'https://www.rw951.fm',    // www variant
-];
+], $envOrigins);
+
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if (in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: $origin");
@@ -56,11 +69,20 @@ header('Access-Control-Allow-Headers: Content-Type, X-Upload-Token');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Content-Type: application/json; charset=utf-8');
 header('X-Robots-Tag: noindex, nofollow');  // hide API from search engines
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('Referrer-Policy: strict-origin-when-cross-origin');
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
+
+// Global exception safety so unhandled errors never leak DB credentials or traces
+set_exception_handler(function (Throwable $e) {
+    error_log($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    respond(['error' => 'An unexpected server error occurred.'], 500);
+});
 
 function respond($payload, int $status = 200): void {
     http_response_code($status);

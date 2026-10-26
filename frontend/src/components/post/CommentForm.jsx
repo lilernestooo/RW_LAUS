@@ -48,7 +48,7 @@ export default function CommentForm({ postId }) {
             {comments.map((c) => (
               <li key={c.id} className="border-b border-white/10 pb-4">
                 <p className="text-sm font-bold text-white">
-                  {c.website ? (
+                  {c.website && /^https?:\/\//i.test(c.website) ? (
                     <a href={c.website} target="_blank" rel="nofollow noopener noreferrer" className="hover:underline">
                       {c.name}
                     </a>

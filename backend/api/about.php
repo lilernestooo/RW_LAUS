@@ -49,10 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
   out(['data' => compact('people', 'milestones', 'programs', 'banner')]);
 }
 
-// ---------- WRITE (password) ----------
-$expected = UPLOAD_TOKEN;   // from .env, defined in config.php
-$given    = trim($_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '');
-if (!$expected || !hash_equals($expected, $given)) fail('Wrong upload password.', 401);
+// ---------- WRITE (auth) ----------
+require_once __DIR__ . '/auth.php';
+require_admin();
 
 $action = $_POST['action'] ?? '';
 $s = fn($k, $max = 160) => ($v = trim($_POST[$k] ?? '')) === '' ? null : mb_substr($v, 0, $max);
