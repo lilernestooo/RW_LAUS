@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { posts, formatDate } from "../../data/posts";
+import { useEffect, useState } from "react";
+import { fetchPosts } from "../../api/api";
+import { formatDate } from "../../utils/formatDate";
 import SectionTitle from "../ui/SectionTitle";
 import PostImage from "../post/PostImage";
 
@@ -35,7 +37,13 @@ const socials = [
 const li = "border-b border-white/15 py-2 last:border-0";
 
 export default function Footer() {
-  const missed = posts.filter((p) => p.date).slice(0, 4);
+  const [missed, setMissed] = useState([]);
+
+  useEffect(() => {
+    fetchPosts({ per_page: 4, page: 1 })
+      .then((r) => setMissed(r.data ?? []))
+      .catch(() => setMissed([]));
+  }, []);
 
   return (
     <footer className="mx-auto w-full max-w-[1244px] overflow-hidden">
