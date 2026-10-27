@@ -1,16 +1,3 @@
-/**
- * Document Title Configuration
- * =============================================================================
- * Customize how browser tab titles are displayed across the entire website.
- *
- * You can edit the values below to customize:
- * - siteName: Suffix attached to page titles (e.g., "About Us – RW95.1FM")
- * - separator: Symbol placed between page title and site name (e.g., "–", "-", "|")
- * - defaultTitle: Full document title used on the Home / Landing page
- * - pages: Default titles for each main page (About, News, Contact, etc.)
- * =============================================================================
- */
-
 export const TITLE_CONFIG = {
   // Suffix appended to each page title (e.g. "Page Name - RW95.1 FM")
   siteName: "RW95.1 FM",

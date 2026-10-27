@@ -1,124 +1,123 @@
 // Admin: monitor, approve, mark as spam or delete visitor comments.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { adminListComments, adminSetCommentStatus, adminDeleteComment } from "../api/api";
+import { AdminTable, ORDERED, useLatest } from "./UI";
 
 const TABS = ["pending", "approved", "spam", "all"];
 
-const th = { textAlign: "left", padding: "8px", borderBottom: "1px solid rgba(128,128,128,.35)", whiteSpace: "nowrap" };
-const td = { padding: "8px", borderBottom: "1px solid rgba(128,128,128,.2)", verticalAlign: "top" };
-const muted = { opacity: 0.65, fontSize: "0.85em" };
+// Keep columns outside the component so the table is not rebuilt on every render
+const COLUMNS = [
+  { title: "Author", data: "name" },
+  { title: "Comment", data: "comment" },
+  { title: "Post", data: "post_title", defaultContent: "" },
+  { title: "Date", data: "created_at", defaultContent: "" },
+  { title: "Status", data: "status" },
+  { title: "Actions", data: null, orderable: false, searchable: false, defaultContent: "" },
+];
+
+// The table now does its own paging and search, so load every page of comments for a tab
+async function fetchAll(status) {
+  const first = await adminListComments(status, 1);
+  let rows = first.data;
+  const pages = first.meta?.total_pages || 1;
+  if (pages > 1) {
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) => adminListComments(status, i + 2))
+    );
+    rows = rows.concat(...rest.map((r) => r.data));
+  }
+  return { rows, meta: first.meta };
+}
 
 export default function CommentsAdmin() {
   const [status, setStatus] = useState("pending");
-  const [page, setPage] = useState(1);
   const [rows, setRows] = useState([]);
-  const [meta, setMeta] = useState({ counts: {}, total_pages: 1 });
+  const [counts, setCounts] = useState({});
   const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
+  const busy = useRef(false);
 
   const load = useCallback(async () => {
     try {
-      const r = await adminListComments(status, page);
-      setRows(r.data);
-      setMeta(r.meta);
+      const { rows, meta } = await fetchAll(status);
+      setRows(rows);
+      setCounts(meta?.counts || {});
       setErr("");
     } catch (e) {
       setErr(e.message);
     }
-  }, [status, page]);
+  }, [status]);
 
   useEffect(() => { load(); }, [load]);
 
   const act = async (fn) => {
-    setBusy(true);
+    if (busy.current) return;
+    busy.current = true;
     try {
       await fn();
       await load();
     } catch (e) {
       setErr(e.message);
     } finally {
-      setBusy(false);
+      busy.current = false;
     }
   };
 
-  const setRowStatus = (id, s) => act(() => adminSetCommentStatus(id, s));
+  // Table buttons read the newest handler so they never act on stale data
+  const actRef = useLatest(act);
+  const setRowStatus = (id, s) => actRef.current(() => adminSetCommentStatus(id, s));
   const remove = (id) => {
     if (!window.confirm("Delete this comment permanently?")) return;
-    act(() => adminDeleteComment(id));
+    actRef.current(() => adminDeleteComment(id));
   };
 
-  const totalPages = meta.total_pages || 1;
-
   return (
-    <div className="adm-card" style={{ padding: 16 }}>
-      <h1>Comments</h1>
-      <p className="adm-hint">New comments stay hidden until you approve them.</p>
+    <>
+      <header className="adm-head">
+        <h1>Comments</h1>
+        <p>New comments stay hidden until you approve them.</p>
+      </header>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>
-        {TABS.map((t) => (
-          <button
-            key={t}
-            className={"adm-btn sm" + (status === t ? "" : " plain")}
-            onClick={() => { setStatus(t); setPage(1); }}
-            style={{ textTransform: "capitalize" }}
-          >
-            {t}{t !== "all" ? ` (${meta.counts?.[t] ?? 0})` : ""}
-          </button>
-        ))}
-      </div>
+      <section className="adm-card">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          {TABS.map((t) => (
+            <button
+              key={t}
+              className={"adm-btn sm" + (status === t ? "" : " plain")}
+              onClick={() => setStatus(t)}
+              style={{ textTransform: "capitalize" }}
+            >
+              {t}{t !== "all" ? ` (${counts?.[t] ?? 0})` : ""}
+            </button>
+          ))}
+        </div>
 
-      {err && <p className="adm-error">{err}</p>}
+        {err && <p className="adm-error">{err}</p>}
 
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9em" }}>
-          <thead>
-            <tr>
-              <th style={th}>Author</th>
-              <th style={th}>Comment</th>
-              <th style={th}>Post</th>
-              <th style={th}>Date</th>
-              <th style={th}>Status</th>
-              <th style={th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr key={c.id}>
-                <td style={td}>
-                  <strong>{c.name}</strong>
-                  <div style={muted}>{c.email}</div>
-                  {c.website && <div style={muted}>{c.website}</div>}
-                  <div style={muted}>{c.ip_address}</div>
-                </td>
-                <td style={{ ...td, maxWidth: 380, whiteSpace: "pre-line" }}>{c.comment}</td>
-                <td style={td}>{c.post_title}</td>
-                <td style={{ ...td, whiteSpace: "nowrap" }}>{c.created_at}</td>
-                <td style={{ ...td, textTransform: "capitalize" }}>{c.status}</td>
-                <td style={{ ...td, whiteSpace: "nowrap" }}>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    {c.status !== "approved" && (
-                      <button className="adm-btn sm" disabled={busy} onClick={() => setRowStatus(c.id, "approved")}>Approve</button>
-                    )}
-                    {c.status !== "spam" && (
-                      <button className="adm-btn plain sm" disabled={busy} onClick={() => setRowStatus(c.id, "spam")}>Spam</button>
-                    )}
-                    <button className="adm-btn plain sm" disabled={busy} onClick={() => remove(c.id)}>Delete</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr><td colSpan={6} style={{ ...td, opacity: 0.7 }}>No comments here.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14 }}>
-        <button className="adm-btn plain sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>
-        <span>Page {page} of {totalPages}</span>
-        <button className="adm-btn plain sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</button>
-      </div>
-    </div>
+        <AdminTable data={rows} columns={COLUMNS} options={ORDERED} slots={{
+          0: (_, c) => (
+            <div>
+              <strong>{c.name}</strong>
+              <div className="adm-muted" style={{ fontSize: ".85em" }}>{c.email}</div>
+              {c.website && <div className="adm-muted" style={{ fontSize: ".85em" }}>{c.website}</div>}
+              <div className="adm-muted" style={{ fontSize: ".85em" }}>{c.ip_address}</div>
+            </div>
+          ),
+          1: (text) => <div style={{ maxWidth: 380, whiteSpace: "pre-line" }}>{text}</div>,
+          3: (d) => <span style={{ whiteSpace: "nowrap" }}>{d}</span>,
+          4: (s) => <span style={{ textTransform: "capitalize" }}>{s}</span>,
+          5: (_, c) => (
+            <div className="adm-row-actions" style={{ justifyContent: "flex-start" }}>
+              {c.status !== "approved" && (
+                <button className="adm-btn sm" onClick={() => setRowStatus(c.id, "approved")}>Approve</button>
+              )}
+              {c.status !== "spam" && (
+                <button className="adm-btn plain sm" onClick={() => setRowStatus(c.id, "spam")}>Spam</button>
+              )}
+              <button className="adm-btn plain sm" onClick={() => remove(c.id)}>Delete</button>
+            </div>
+          ),
+        }} />
+      </section>
+    </>
   );
 }

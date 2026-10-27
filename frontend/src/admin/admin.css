@@ -790,6 +790,16 @@
   width: auto;
 }
 
+/* no red outline when the search box or entries dropdown is clicked */
+.adm .dt-container .dt-search input:focus,
+.adm .dt-container .dt-search input:focus-visible,
+.adm .dt-container .dt-length select:focus,
+.adm .dt-container .dt-length select:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--border-strong) !important;
+}
+
 .adm .dt-container .dt-paging .dt-paging-button {
   color: var(--text) !important;
   border-radius: 0;
