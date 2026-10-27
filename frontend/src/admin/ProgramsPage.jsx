@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { AdminTable, Field, Modal, ORDERED, RowActions, SingleMedia, useLatest, useToast } from "./UI";
 import { get, postForm } from "../api/api";
 
@@ -10,6 +11,10 @@ const COLUMNS = [
   { title: "Audio", data: "audio", orderable: false, searchable: false, defaultContent: "" },
   { title: "", data: null, orderable: false, searchable: false, defaultContent: "" },
 ];
+
+// CHANGE 1: which category each URL shows (/admin/programs/regular, /admin/programs/news).
+// It is matched against the category's slug + title from your API.
+const PAGES = { regular: /regular/i, news: /news/i };
 
 function ProgramTable({ programs, onMove, onEdit, onDelete }) {
   return (
@@ -58,7 +63,8 @@ function ProgramForm({ categories, initial, onSubmit }) {
 
   return (
     <div className="adm-stack">
-      {!isEdit && (
+      {/* CHANGE 2: the category picker only shows if there is more than one category to pick */}
+      {!isEdit && categories.length > 1 && (
         <label className="adm-field"><span>Category</span>
           <select value={f.category} onChange={set("category")}>
             {categories.map((c) => <option key={c.slug} value={c.slug}>{c.title}</option>)}
@@ -100,6 +106,7 @@ function ProgramForm({ categories, initial, onSubmit }) {
 
 export default function ProgramsAdmin() {
   const notify = useToast();
+  const { group } = useParams(); // CHANGE 3: "regular" or "news", from the URL
   const [cats, setCats] = useState([]);
   const [modal, setModal] = useState(null); // "add" | program id
   const catsRef = useLatest(cats);
@@ -109,6 +116,9 @@ export default function ProgramsAdmin() {
     [notify]
   );
   useEffect(() => { load(); }, [load]);
+
+  // Close any open popup when you switch between the two pages
+  useEffect(() => { setModal(null); }, [group]);
 
   const act = async (fields, okMsg) => {
     try {
@@ -123,9 +133,9 @@ export default function ProgramsAdmin() {
   };
 
   const move = (id, dir) => {
-    const cat = catsRef.current.find((c) => c.programs.some((p) => p.id === id));
-    if (!cat) return;
-    const ids = cat.programs.map((p) => p.id);
+    const c = catsRef.current.find((c) => c.programs.some((p) => p.id === id));
+    if (!c) return;
+    const ids = c.programs.map((p) => p.id);
     const i = ids.indexOf(id);
     const j = i + dir;
     if (j < 0 || j >= ids.length) return;
@@ -134,47 +144,63 @@ export default function ProgramsAdmin() {
   };
   const del = (p) => window.confirm(`Delete ${p.title}?`) && act({ action: "delete_program", id: p.id }, "Deleted.");
 
-  const editing = modal && modal !== "add"
-    ? cats.flatMap((c) => c.programs).find((p) => p.id === modal) : null;
+  // CHANGE 4: this page only shows ONE category
+  const pattern = PAGES[group];
+  const cat = pattern ? cats.find((c) => pattern.test(`${c.slug} ${c.title}`)) : null;
+
+  if (!cats.length) return <div className="adm-spinner-wrap"><div className="adm-spinner" /></div>;
+  if (!cat) {
+    return (
+      <header className="adm-head">
+        <h1>Programs page</h1>
+        <p>Could not find that category. Check the PAGES matchers at the top of ProgramsPage.jsx.</p>
+      </header>
+    );
+  }
+
+  const editing = modal && modal !== "add" ? cat.programs.find((p) => p.id === modal) : null;
 
   return (
     <>
       <header className="adm-head">
-        <h1>Programs page</h1>
-        <p>Card backgrounds and the programs listed under each category.</p>
+        <h1>{cat.title}</h1>
+        <p>Card background and programs for this category.</p>
       </header>
 
-      <div className="adm-two">
-        {cats.map((c) => (
-          <SingleMedia key={c.slug} title={`${c.title} card`} url={c.background}
-            hint="The picture behind this card on the Programs page. Uploading a new one replaces it."
-            onUpload={async (photo) => { await postForm("programs.php", { action: "set_background", category: c.slug, photo }); notify("Background updated."); await load(); }}
-            onRemove={c.background ? async () => { await postForm("programs.php", { action: "delete_background", category: c.slug }); notify("Removed."); await load(); } : undefined} />
-        ))}
-      </div>
+      <SingleMedia
+        title="Card background"
+        url={cat.background}
+        hint="The picture behind this card on the Programs page. Uploading a new one replaces it."
+        onUpload={async (photo) => {
+          await postForm("programs.php", { action: "set_background", category: cat.slug, photo });
+          notify("Background updated.");
+          await load();
+        }}
+        onRemove={cat.background ? async () => {
+          await postForm("programs.php", { action: "delete_background", category: cat.slug });
+          notify("Removed.");
+          await load();
+        } : undefined}
+      />
 
       <section className="adm-card">
         <div className="adm-card-head">
           <h2>Programs</h2>
           <button className="adm-btn" onClick={() => setModal("add")}>Add program</button>
         </div>
-        <p className="adm-hint">Top of each list is shown first on the site. Use ▲ ▼ to reorder.</p>
-        {cats.map((c) => (
-          <div key={c.slug}>
-            <h3>{c.title}</h3>
-            <ProgramTable programs={c.programs} onMove={move} onEdit={setModal} onDelete={del} />
-          </div>
-        ))}
+        <p className="adm-hint">Top of the list is shown first on the site. Use ▲ ▼ to reorder.</p>
+        <ProgramTable programs={cat.programs} onMove={move} onEdit={setModal} onDelete={del} />
       </section>
 
       {modal === "add" && (
-        <Modal wide title="Add a program" onClose={() => setModal(null)}>
-          <ProgramForm categories={cats} onSubmit={(f) => act({ action: "add_program", ...f }, "Added.")} />
+        <Modal wide title={`Add to ${cat.title}`} onClose={() => setModal(null)}>
+          {/* CHANGE 5: only this page's category is passed in, so new programs go to the right place */}
+          <ProgramForm categories={[cat]} onSubmit={(f) => act({ action: "add_program", ...f }, "Added.")} />
         </Modal>
       )}
       {editing && (
         <Modal wide title={`Edit ${editing.title}`} onClose={() => setModal(null)}>
-          <ProgramForm categories={cats} initial={editing} onSubmit={async (f) => {
+          <ProgramForm categories={[cat]} initial={editing} onSubmit={async (f) => {
             const { category, ...rest } = f; // eslint-disable-line no-unused-vars
             const ok = await act({ action: "update_program", id: editing.id, ...rest }, "Saved.");
             if (ok) setModal(null);
