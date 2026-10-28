@@ -4,7 +4,7 @@
  *   -> saves the message in contacts_tbl, then emails it to CONTACT_TO via SMTP (PHPMailer)
  *   <- { data: { saved: true, emailed: true|false } }
  *
- * backend/.env:
+ * public/.env:
  *   SMTP_HOST, SMTP_PORT, SMTP_SECURE (tls|ssl), SMTP_USER, SMTP_PASS
  *   CONTACT_TO, CONTACT_FROM
  *   BANNER_URL=https://yourdomain.com/assets/cropped-NewBanner.jpg   (public https link, no Gmail hover icons)

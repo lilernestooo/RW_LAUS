@@ -1,5 +1,5 @@
 # ==============================================================================
-# Security Hardening for RW 95.1 FM Backend
+# Security Hardening + SPA Routing for RW 95.1 FM
 # ==============================================================================
 
 # 1. Disable directory browsing across all backend directories
@@ -45,4 +45,11 @@ Options -Indexes
 <IfModule mod_php8.c>
     php_flag display_errors Off
     php_flag log_errors On
+</IfModule>
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/(api|uploads|assets)/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ /index.html [L]
 </IfModule>

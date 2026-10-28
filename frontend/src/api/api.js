@@ -1,5 +1,4 @@
-// Talks to the PHP backend (Apache + MySQL80).
-const API = import.meta.env.VITE_API_URL ?? "http://localhost/RW_LAUS/backend/api";
+const API = import.meta.env.VITE_API_URL ?? "http://rw951.fm/RW_LAUS/frontend/public/api";
 
 // Public reads (the website and the admin tables both use this)
 export async function get(endpoint, params = {}) {
