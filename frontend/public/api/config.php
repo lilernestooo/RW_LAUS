@@ -1,7 +1,7 @@
 <?php
 /**
  * Shared config + helpers for the RW 95.1 FM API.
- * Place the whole rw-backend folder in C:\xampp\htdocs\
+ * Lives in frontend/public/api/ (served at /api/ in dev and production).
  */
 
 // Prevent direct browser execution of config.php
@@ -15,7 +15,8 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 error_reporting(E_ALL);
 
-// ---- Load secrets from backend/.env (plain KEY=value lines) ----
+// ---- Load secrets from .env (plain KEY=value lines) ----
+// Currently resolves to frontend/public/.env. Make sure public/.htaccess blocks it.
 function load_env(string $file): array {
     if (!is_file($file)) return [];
     $env = [];
@@ -43,12 +44,9 @@ define('DB_NAME', env('DB_NAME', 'db_rw'));
 define('DB_USER', env('DB_USER', 'root'));
 define('DB_PASS', env('DB_PASS', ''));
 
-// URL path where the backend folder lives under htdocs
-const BASE_PATH = '/RW_LAUS/backend';
-
 // ---- Uploads ----
 define('UPLOAD_TOKEN', env('UPLOAD_TOKEN', ''));   // set in .env; empty = uploads disabled
-const UPLOAD_DIR    = __DIR__ . '/../uploads';
+const UPLOAD_DIR    = __DIR__ . '/../uploads';     // -> frontend/public/uploads
 const UPLOAD_MAX_MB = 8;                           // per image
 
 // ---- CORS (Vite dev server + production) ----
@@ -111,13 +109,15 @@ function db(): PDO {
     return $pdo;
 }
 
-/** Turn a stored filename like "page1/hero.png" into a full URL. */
+/**
+ * Turn a stored filename like "page1/hero.png" into a root-relative URL.
+ * Returns "/uploads/page1/hero.png", which Vite serves from public/uploads
+ * in dev and which works the same on the production domain.
+ */
 function image_url(?string $filename): ?string {
     if (!$filename) return null;
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $path   = implode('/', array_map('rawurlencode', explode('/', $filename)));
-    return "$scheme://$host" . BASE_PATH . '/uploads/' . $path;
+    $path = implode('/', array_map('rawurlencode', explode('/', $filename)));
+    return '/uploads/' . $path;
 }
 
 /** Fetch category names for a set of post ids: [post_id => ['Events','News']] */
