@@ -83,7 +83,7 @@ const OPEN_URL = `https://www.google.com/maps/place/${PLACE_NAME}/data=!4m2!3m1!
 const details = [
   { label: "Address", value: "3rd Floor, Corporate Guarantee, Jose Abad Santos Avenue, City of San Fernando, Pampanga 2000" },
   { label: "Tel No", value: "(045) 963 9595", href: "tel:+63459639595" },
-  { label: "E-mail", value: "rw951fm@yahoo.com", href: "mailto:rw951fm@yahoo.com" },
+  { label: "E-mail", value: "dwrw951fm@yahoo.com", href: "mailto:dwrw951fm@yahoo.com" },
   { label: "Requests and Greetings", value: "Text +63 919 264 4439", href: "sms:+639192644439" },
   { label: "Radio ad placement and marketing collaborations", value: "Text or Call: +63 919 065 0061", href: "tel:+639190650061" },
 ];
@@ -107,9 +107,28 @@ export default function Contact() {
 
   const validate = () => {
     const er = {};
-    if (!form.name.trim()) er.name = "Please enter your name.";
-    if (!form.email.trim()) er.email = "Please enter your e-mail.";
-    else if (!EMAIL.test(form.email.trim())) er.email = "That e-mail doesn't look right.";
+    const trimmedName = form.name.trim();
+    const trimmedEmail = form.email.trim();
+    const trimmedMessage = form.message.trim();
+
+    if (!trimmedName) {
+      er.name = "Please enter your name.";
+    } else if (trimmedName.length < 2) {
+      er.name = "Name must be at least 2 characters.";
+    }
+
+    if (!trimmedEmail) {
+      er.email = "Please enter your e-mail.";
+    } else if (!EMAIL.test(trimmedEmail)) {
+      er.email = "That e-mail doesn't look right.";
+    }
+
+    if (!trimmedMessage) {
+      er.message = "Please enter your message.";
+    } else if (trimmedMessage.length < 5) {
+      er.message = "Your message is too short (at least 5 characters).";
+    }
+
     return er;
   };
 
@@ -266,7 +285,7 @@ export default function Contact() {
 
             <Reveal direction="right" delay={350}>
               <label htmlFor="c-message" className="mb-1.5 block font-bold text-white">
-                Your message <span className="font-normal text-neutral-400">(optional)</span>
+                Your message
               </label>
               <textarea
                 id="c-message"
@@ -274,8 +293,10 @@ export default function Contact() {
                 maxLength={2000}
                 value={form.message}
                 onChange={set("message")}
+                aria-invalid={!!errors.message}
                 className={`${field} resize-y`}
               />
+              {errors.message && <p className="mt-1 text-sm text-red-400">{errors.message}</p>}
               <p className="mt-1 text-right text-xs text-neutral-500">{form.message.length} / 2000</p>
             </Reveal>
 

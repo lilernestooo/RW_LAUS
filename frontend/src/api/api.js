@@ -176,3 +176,15 @@ export const adminDeleteComment = (id) =>
 // Posts (admin): create a new post, then upload its images with upload.php
 export const adminCreatePost = (fields) => postJson("posts_admin.php", { action: "create", ...fields });
 export const adminDeletePost = (id) => postJson("posts_admin.php", { action: "delete", id });
+
+// Contact Messages (admin)
+export const adminListContacts = (filter = "all") =>
+  postJson("contacts_admin.php", { action: "admin_list", filter });
+export const adminSaveContactRecipient = (recipient) =>
+  postJson("contacts_admin.php", { action: "save_recipient", recipient });
+export const adminToggleContactEmailed = (id, emailed) =>
+  postJson("contacts_admin.php", { action: "toggle_emailed", id, emailed });
+export const adminDeleteContact = (id) =>
+  postJson("contacts_admin.php", { action: "delete", id });
+export const adminBulkDeleteContacts = (ids) =>
+  postJson("contacts_admin.php", { action: "bulk_delete", ids });
