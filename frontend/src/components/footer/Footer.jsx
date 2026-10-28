@@ -87,7 +87,12 @@ export default function Footer() {
               <li className={`${li} text-justify uppercase`}>
                 Address: 3rd Flr., CGIC Bldg., Jose Abad Santos Avenue, City of San Fernando, Pampanga
               </li>
-              <li className={li}>E-MAIL: rw951fm@yahoo.com</li>
+              <li className={li}>
+                E-MAIL:{" "}
+                <a href="mailto:dwrw951fm@yahoo.com" className="transition-colors hover:text-red-500">
+                  dwrw951fm@yahoo.com
+                </a>
+              </li>
             </ul>
 
             <SectionTitle className="mt-6">Follow us</SectionTitle>

@@ -40,7 +40,7 @@ $message = trim((string) ($in['message'] ?? ''));
 
 if ($name === '' || mb_strlen($name) < 2 || mb_strlen($name) > 100) respond(['error' => 'Please enter your full name (2–100 characters).'], 422);
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 150) respond(['error' => 'Please enter a valid e-mail.'], 422);
-if (mb_strlen($message) < 10) respond(['error' => 'Your message is too short (at least 10 characters).'], 422);
+if (mb_strlen($message) < 5) respond(['error' => 'Your message is too short (at least 5 characters).'], 422);
 if (mb_strlen($message) > 2000) respond(['error' => 'Your message is too long (2000 characters max).'], 422);
 
 $pdo = db();
@@ -63,15 +63,24 @@ try {
     respond(['error' => 'Could not save your message. Please try again.'], 500);
 }
 
-// 2) Email it
-$to       = env('CONTACT_TO', 'ernestlazatin69@gmail.com');
+// 2) Email it - Official station address: dwrw951fm@yahoo.com (with admin override support)
+$to = env('CONTACT_TO', 'dwrw951fm@yahoo.com');
+try {
+    $dbRecip = $pdo->query("SELECT setting_value FROM settings_tbl WHERE setting_key = 'contact_recipient' LIMIT 1")->fetchColumn();
+    if ($dbRecip && filter_var(trim((string)$dbRecip), FILTER_VALIDATE_EMAIL)) {
+        $to = trim((string)$dbRecip);
+    }
+} catch (Throwable $e) {}
 $smtpUser = env('SMTP_USER', '');
 $from     = env('CONTACT_FROM', $smtpUser !== '' ? $smtpUser : 'noreply@localhost');
+$fromName = env('CONTACT_FROM_NAME', 'DWRW Contact Form');
 
 $h = function (string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); };
 $safeName = preg_replace('/[\r\n]+/', ' ', $name);
 
-$subject = 'New message from ' . $safeName . ' (RW 95.1 FM website)';
+$subjectPrefix = env('CONTACT_SUBJECT_PREFIX', 'DWRW Contact Form');
+$customSubject = env('CONTACT_SUBJECT', '');
+$subject       = $customSubject !== '' ? $customSubject : ($subjectPrefix . ' - ' . $safeName);
 
 $sentAt    = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('F j, Y \a\t g:i A');
 $replyHref = 'mailto:' . $email . '?subject=' . rawurlencode('Re: Your message to RW 95.1 FM');
@@ -213,7 +222,8 @@ $body = '<!DOCTYPE html>'
   . 'You can also reply directly to this e-mail to answer the sender.'
   . '</div>'
   . '<div class="t-muted" style="' . $font . 'font-size:12px;line-height:1.7;color:#8a8a8a;margin-top:10px;">'
-  . '<strong>RW 95.1 FM</strong> &middot; Jose Abad Santos Avenue, City of San Fernando, Pampanga'
+  . '<strong>RW 95.1 FM</strong> &middot; Jose Abad Santos Avenue, City of San Fernando, Pampanga<br>'
+  . '<span style="font-size:11px;color:#9ca3af;margin-top:6px;display:inline-block;">This e-mail was sent from a contact form on ' . $h(env('SITE_TITLE', 'RW 95.1 FM')) . ' (' . $h(env('SITE_URL', 'https://rw951.fm')) . ')</span>'
   . '</div>'
   . '</td></tr>'
 
@@ -221,14 +231,19 @@ $body = '<!DOCTYPE html>'
   . '</td></tr></table>'
   . '</body></html>';
 
-$altBody = "NEW CONTACT MESSAGE - RW 95.1 FM\n"
+$siteTitle = env('SITE_TITLE', 'RW 95.1 FM');
+$siteUrl   = env('SITE_URL', 'https://rw951.fm');
+
+$altBody = "NEW CONTACT MESSAGE - $siteTitle\n"
          . "----------------------------------------------\n"
          . "Name:   $name\n"
          . "E-mail: $email\n\n"
          . "Message:\n$message\n\n"
          . "----------------------------------------------\n"
          . "Received $sentAt (Philippine time)\n"
-         . "Reply directly to this e-mail to answer the sender.";
+         . "Reply directly to this e-mail to answer the sender.\n\n"
+         . "--\n"
+         . "This e-mail was sent from a contact form on $siteTitle ($siteUrl)";
 
 $sent = false;
 $mail = new PHPMailer(true);
@@ -238,11 +253,15 @@ try {
     if ($smtpHost !== '') {
         $mail->isSMTP();
         $mail->Host       = $smtpHost;
-        $mail->Port       = (int) env('SMTP_PORT', '587');
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $smtpUser;
-        $mail->Password   = env('SMTP_PASS', '');
-        $mail->SMTPSecure = strtolower(env('SMTP_SECURE', 'tls')) === 'ssl'
+        $port             = (int) env('SMTP_PORT', '587');
+        $mail->Port       = $port;
+        $mail->SMTPAuth   = ($smtpUser !== '' || env('SMTP_PASS', '') !== '');
+        if ($mail->SMTPAuth) {
+            $mail->Username = $smtpUser;
+            $mail->Password = env('SMTP_PASS', '');
+        }
+        $secure           = strtolower(env('SMTP_SECURE', 'tls'));
+        $mail->SMTPSecure = ($secure === 'ssl' || $port === 465)
             ? PHPMailer::ENCRYPTION_SMTPS
             : PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Timeout    = 20;
@@ -273,7 +292,7 @@ try {
     }
 
     $mail->CharSet = 'UTF-8';
-    $mail->setFrom($from, 'RW 95.1 FM Website');
+    $mail->setFrom($from, $fromName);
     $mail->addAddress($to);
     $mail->addReplyTo($email, $safeName);
 
@@ -300,6 +319,9 @@ try {
     }
 } catch (MailException $e) {
     error_log("contact.php: mail failed for rec_id $recId: " . $mail->ErrorInfo);
+    $sent = false;
+} catch (Throwable $t) {
+    error_log("contact.php: unexpected mail error for rec_id $recId: " . $t->getMessage());
     $sent = false;
 }
 
