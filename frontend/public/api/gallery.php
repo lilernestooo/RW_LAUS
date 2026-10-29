@@ -1,4 +1,4 @@
- <?php
+<?php
 /**
  * Gallery page photos, all in ONE table: gallery_tbl
  *
@@ -39,7 +39,7 @@ function remove_file(string $root, ?string $rel): void {
 if ($method === 'GET') {
     try {
         $rows = $pdo->query('SELECT id, filename, caption FROM gallery_tbl ORDER BY sort_order, id')->fetchAll();
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         respond(['error' => 'The gallery_tbl table is missing. Run the gallery SQL in phpMyAdmin.'], 500);
     }
@@ -141,7 +141,7 @@ foreach ($names as $i => $original) {
         $pdo->prepare('INSERT INTO gallery_tbl (filename, caption, sort_order) VALUES (?, ?, ?)')
             ->execute([$rel, $caption, ++$order]);
         $uploaded[] = ['id' => (int)$pdo->lastInsertId(), 'url' => image_url($rel)];
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         unlink("$absDir/$final");
         $errors[] = "$original: database error";

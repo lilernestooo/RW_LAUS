@@ -19,7 +19,7 @@ const ALLOWED_TYPES = [
     'image/gif'  => 'gif',
 ];
 
-function find_post(PDO $pdo, string $slug): array {
+function find_post(DbConnection $pdo, string $slug): array {
     $s = $pdo->prepare('SELECT id, slug FROM posts WHERE slug = ? LIMIT 1');
     $s->execute([$slug]);
     $post = $s->fetch();
@@ -27,7 +27,7 @@ function find_post(PDO $pdo, string $slug): array {
     return $post;
 }
 
-function refresh_gallery_count(PDO $pdo, int $postId): int {
+function refresh_gallery_count(DbConnection $pdo, int $postId): int {
     $pdo->prepare(
         'UPDATE posts SET gallery_count = (SELECT COUNT(*) FROM post_images WHERE post_id = ?) WHERE id = ?'
     )->execute([$postId, $postId]);
@@ -140,7 +140,7 @@ foreach ($names as $i => $original) {
             $pdo->prepare('UPDATE posts SET featured_image = ? WHERE id = ?')->execute([$rel, $post['id']]);
             $uploaded[] = ['url' => image_url($rel)];
         }
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         unlink("$absDir/$final");
         $errors[] = "$original: database error";

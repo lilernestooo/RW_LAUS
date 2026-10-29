@@ -9,16 +9,13 @@ $pdo = db();
 if (!empty($_GET['archives'])) {
     $months = [];
 
-    // 1) Months saved in the `archives` table (full list from the old site)
     try {
         foreach ($pdo->query('SELECT value, label FROM archives')->fetchAll() as $r) {
             $months[$r['value']] = $r['label'];
         }
-    } catch (PDOException $e) {
-        // table not created yet: fall back to posts only
+    } catch (Throwable $e) {
     }
 
-    // 2) Months of posts that have a date (so new posts add their month automatically)
     $rows = $pdo->query(
         "SELECT DATE_FORMAT(published_at, '%Y-%m') AS value,
                 DATE_FORMAT(published_at, '%M %Y') AS label
@@ -28,7 +25,7 @@ if (!empty($_GET['archives'])) {
     )->fetchAll();
     foreach ($rows as $r) $months[$r['value']] = $r['label'];
 
-    krsort($months); // newest first
+    krsort($months);
     $out = [];
     foreach ($months as $value => $label) $out[] = ['value' => (string)$value, 'label' => $label];
     respond(['data' => $out]);

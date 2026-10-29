@@ -2,15 +2,7 @@
 require __DIR__ . '/config.php';
 $pdo = db();   // config.php gives the connection through db()
 
-header('Content-Type: application/json; charset=utf-8');
-ini_set('display_errors', '0');
-set_exception_handler(function (Throwable $e) {
-  error_log('about.php exception: ' . $e->getMessage());
-  http_response_code(500);
-  echo json_encode(['error' => 'A server error occurred. Please try again later.']);
-});
-
-function out($data, int $code = 200) { http_response_code($code); echo json_encode($data); exit; }
+function out($data, int $code = 200) { respond($data, $code); }
 function fail($msg, int $code = 400) { out(['error' => $msg], $code); }
 
 // Stored as "uploads/people/x.jpg"; image_url() adds /uploads/ itself
@@ -24,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
        FROM about_tbl
       WHERE section IN ('dj','anchor') AND is_active = 1
       ORDER BY sort_order, id"
-  )->fetchAll(PDO::FETCH_ASSOC);
+  )->fetchAll();
   foreach ($people as &$p) { $p['photo_url'] = $urlOf($p['photo']); }
   unset($p);
 
@@ -33,17 +25,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
        FROM about_tbl
       WHERE section = 'milestone' AND is_active = 1
       ORDER BY year, sort_order, id"
-  )->fetchAll(PDO::FETCH_ASSOC);
+  )->fetchAll();
 
   $programs = $pdo->query(
     "SELECT id, REPLACE(section,'_program','') AS category, title AS name
        FROM about_tbl
       WHERE section IN ('news_program','entertainment_program') AND is_active = 1
       ORDER BY sort_order, id"
-  )->fetchAll(PDO::FETCH_ASSOC);
+  )->fetchAll();
 
   $b = $pdo->query("SELECT id, title AS caption, photo FROM about_tbl
-                     WHERE section='about_banner' AND is_active=1 ORDER BY id DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+                     WHERE section='about_banner' AND is_active=1 ORDER BY id DESC LIMIT 1")->fetch();
   $banner = $b ? $b + ['photo_url' => $urlOf($b['photo'])] : null;
 
   out(['data' => compact('people', 'milestones', 'programs', 'banner')]);
@@ -56,7 +48,7 @@ require_admin();
 $action = $_POST['action'] ?? '';
 $s = fn($k, $max = 160) => ($v = trim($_POST[$k] ?? '')) === '' ? null : mb_substr($v, 0, $max);
 
-function next_order(PDO $pdo, string $section): int {
+function next_order(DbConnection $pdo, string $section): int {
   $q = $pdo->prepare("SELECT COALESCE(MAX(sort_order),0)+1 FROM about_tbl WHERE section=?");
   $q->execute([$section]);
   return (int)$q->fetchColumn();
@@ -77,7 +69,7 @@ function save_photo(): ?string {
   return "uploads/people/$name";
 }
 
-function drop_photo(PDO $pdo, int $id) {
+function drop_photo(DbConnection $pdo, int $id) {
   $q = $pdo->prepare("SELECT photo FROM about_tbl WHERE id=? AND section IN ('dj','anchor')");
   $q->execute([$id]);
   if ($old = $q->fetchColumn()) @unlink(dirname(__DIR__) . "/$old");
@@ -135,7 +127,7 @@ switch ($action) {
   case 'set_banner':
     $photo = save_photo();
     if (!$photo) fail('Choose a photo.');
-    foreach ($pdo->query("SELECT photo FROM about_tbl WHERE section='about_banner'")->fetchAll(PDO::FETCH_COLUMN) as $old) {
+    foreach (array_column($pdo->query("SELECT photo FROM about_tbl WHERE section='about_banner'")->fetchAll(), 'photo') as $old) {
       if ($old) @unlink(dirname(__DIR__) . "/$old");
     }
     $pdo->exec("DELETE FROM about_tbl WHERE section='about_banner'");
@@ -144,7 +136,7 @@ switch ($action) {
     break;
 
   case 'delete_banner':
-    foreach ($pdo->query("SELECT photo FROM about_tbl WHERE section='about_banner'")->fetchAll(PDO::FETCH_COLUMN) as $old) {
+    foreach (array_column($pdo->query("SELECT photo FROM about_tbl WHERE section='about_banner'")->fetchAll(), 'photo') as $old) {
       if ($old) @unlink(dirname(__DIR__) . "/$old");
     }
     $pdo->exec("DELETE FROM about_tbl WHERE section='about_banner'");

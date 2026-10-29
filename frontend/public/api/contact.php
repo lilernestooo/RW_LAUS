@@ -4,7 +4,7 @@
  *   -> saves the message in contacts_tbl, then emails it to CONTACT_TO via SMTP (PHPMailer)
  *   <- { data: { saved: true, emailed: true|false } }
  *
- * public/.env:
+ * api/email_connect.php keys:
  *   SMTP_HOST, SMTP_PORT, SMTP_SECURE (tls|ssl), SMTP_USER, SMTP_PASS
  *   CONTACT_TO, CONTACT_FROM
  *   BANNER_URL=https://yourdomain.com/assets/cropped-NewBanner.jpg   (public https link, no Gmail hover icons)
@@ -58,7 +58,7 @@ try {
     $pdo->prepare('INSERT INTO contacts_tbl (name, email, message, ip_address) VALUES (?, ?, ?, ?)')
         ->execute([$name, $email, $message, $ip]);
     $recId = (int) $pdo->lastInsertId();
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     error_log($e->getMessage());
     respond(['error' => 'Could not save your message. Please try again.'], 500);
 }
@@ -277,7 +277,7 @@ try {
             }
         }
 
-        // Local XAMPP often has no CA bundle; only disable verification when .env says so
+        // Local XAMPP often has no CA bundle; only disable verification when email_connect.php says so
         if (strtolower(env('SMTP_VERIFY_SSL', 'true')) === 'false') {
             $ssl['verify_peer']       = false;
             $ssl['verify_peer_name']  = false;

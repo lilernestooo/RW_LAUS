@@ -31,7 +31,7 @@ function clean_name(string $name): string {
 }
 
 /** Delete one home_media row and its file (only if the file lives inside uploads/). */
-function remove_item(PDO $pdo, array $row, string $root): void {
+function remove_item(DbConnection $pdo, array $row, string $root): void {
     $pdo->prepare('DELETE FROM home_media WHERE id = ?')->execute([$row['id']]);
     $path = realpath($root . '/' . $row['filename']);
     if ($path !== false && strpos($path, $root . DIRECTORY_SEPARATOR) === 0 && is_file($path)) {
@@ -43,7 +43,7 @@ function remove_item(PDO $pdo, array $row, string $root): void {
 if ($method === 'GET') {
     try {
         $rows = $pdo->query('SELECT id, kind, filename, caption FROM home_media ORDER BY sort_order, id')->fetchAll();
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         respond(['error' => 'The home_media table is missing. Run the home_media SQL in phpMyAdmin.'], 500);
     }
@@ -146,7 +146,7 @@ foreach ($names as $i => $original) {
         $id = (int)$pdo->lastInsertId();
         $newIds[]   = $id;
         $uploaded[] = ['id' => $id, 'url' => image_url($rel)];
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         unlink("$absDir/$final");
         $errors[] = "$original: database error";

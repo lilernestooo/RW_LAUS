@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 
 // Image with category tags. Shows a placeholder when post.image is null.
 // natural = show the whole photo at its own proportions (no cropping)
-export default function PostImage({ post, ratio = "aspect-[4/3]", natural = false }) {
-  const Wrapper = natural ? "div" : Link;
-  const wrapperProps = natural ? {} : { to: `/${post.slug}` };
+// asLink = false renders a plain div, for use inside a parent that is already a link
+export default function PostImage({ post, ratio = "aspect-[4/3]", natural = false, asLink = true }) {
+  const useDiv = natural || !asLink;
+  const Wrapper = useDiv ? "div" : Link;
+  const wrapperProps = useDiv ? {} : { to: `/${post.slug}` };
 
   return (
     <Wrapper

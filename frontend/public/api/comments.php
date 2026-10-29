@@ -5,7 +5,7 @@
  * POST (admin, token required): action = admin_list | set_status | delete
  */
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/auth.php';   // provides require_admin() (checks the X-Upload-Token login token)
+require_once __DIR__ . '/auth.php';
 
 set_exception_handler(function (Throwable $e) {
     error_log($e);
@@ -14,7 +14,6 @@ set_exception_handler(function (Throwable $e) {
 
 $pdo = db();
 
-// ---------- GET: approved comments for one post ----------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     $postId = (int)($_GET['post_id'] ?? 0);
     if ($postId < 1) respond(['error' => 'post_id required'], 400);
@@ -26,16 +25,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
           ORDER BY created_at ASC"
     );
     $stmt->execute([$postId]);
-    respond(['data' => $stmt->fetchAll()]);   // email is never returned
+    respond(['data' => $stmt->fetchAll()]);
 }
 
-// ---------- POST ----------
 $in = json_decode(file_get_contents('php://input'), true);
 if (!is_array($in)) respond(['error' => 'Invalid request'], 400);
 $action = $in['action'] ?? '';
 
 if ($action === 'submit') {
-    // Honeypot: real users leave this empty
     if (!empty($in['hp'])) respond(['data' => ['saved' => true]]);
 
     $postId  = (int)($in['post_id'] ?? 0);
@@ -57,7 +54,6 @@ if ($action === 'submit') {
     $chk->execute([$postId]);
     if (!$chk->fetchColumn()) respond(['error' => 'Post not found'], 404);
 
-    // Rate limit: 5 comments per IP per hour
     $ip = $_SERVER['REMOTE_ADDR'] ?? null;
     $rl = $pdo->prepare('SELECT COUNT(*) FROM comments_tbl WHERE ip_address = ? AND created_at > (NOW() - INTERVAL 1 HOUR)');
     $rl->execute([$ip]);
@@ -71,13 +67,13 @@ if ($action === 'submit') {
     respond(['data' => ['saved' => true, 'status' => 'pending']], 201);
 }
 
-// ---------- Admin actions ----------
 require_admin();
 
 if ($action === 'admin_list') {
     $status  = $in['status'] ?? 'all';
     $page    = max(1, (int)($in['page'] ?? 1));
     $perPage = 20;
+    $offset  = ($page - 1) * $perPage;
     $where   = in_array($status, ['pending', 'approved', 'spam'], true) ? 'WHERE c.status = ?' : '';
     $params  = $where ? [$status] : [];
 
@@ -90,16 +86,14 @@ if ($action === 'admin_list') {
            FROM comments_tbl c JOIN posts p ON p.id = c.post_id
            $where
           ORDER BY c.created_at DESC
-          LIMIT ? OFFSET ?"
+          LIMIT $perPage OFFSET $offset"
     );
-    $i = 1;
-    foreach ($params as $v) $stmt->bindValue($i++, $v);
-    $stmt->bindValue($i++, $perPage, PDO::PARAM_INT);
-    $stmt->bindValue($i,   ($page - 1) * $perPage, PDO::PARAM_INT);
-    $stmt->execute();
+    $stmt->execute($params);
 
-    $counts = $pdo->query('SELECT status, COUNT(*) n FROM comments_tbl GROUP BY status')
-                  ->fetchAll(PDO::FETCH_KEY_PAIR);
+    $counts = [];
+    foreach ($pdo->query('SELECT status, COUNT(*) AS n FROM comments_tbl GROUP BY status')->fetchAll() as $r) {
+        $counts[$r['status']] = (int)$r['n'];
+    }
 
     respond(['data' => $stmt->fetchAll(), 'meta' => [
         'page' => $page, 'total' => $total,

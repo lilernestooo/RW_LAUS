@@ -1,17 +1,15 @@
-# ==============================================================================
 # API folder rules
-# ==============================================================================
 
 # No folder listing, and don't auto-run home.php when someone opens /api/
 Options -Indexes
 DirectoryIndex disabled
 
-# config.php is only meant to be included by other scripts, never requested
-<Files "config.php">
+# Include-only files: never requested directly
+<FilesMatch "^(config\.php|mysqli_connect.*\.php|email_connect.*\.php)$">
     Require all denied
-</Files>
+</FilesMatch>
 
-# Never serve hidden files, dumps, logs or backups from here
-<FilesMatch "^\.|\.(env|sql|log|bak|swp|ini|conf|sh|old|orig|tmp|phps)$">
+# Never serve hidden files, dumps, logs, backups or config samples
+<FilesMatch "^\.|\.(env|sql|log|bak|swp|ini|conf|sh|old|orig|tmp|phps|json|lock|md|yml|xml|dist)$">
     Require all denied
 </FilesMatch>

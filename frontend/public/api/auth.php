@@ -2,14 +2,14 @@
 // One file for the admin login.
 //  - Opened directly (POST /api/auth.php) it signs you in and returns a token.
 //  - Other endpoints use it with:  require_once __DIR__ . '/auth.php';  require_admin();
-// Needs ADMIN_TOKEN_SECRET (32+ random characters) in backend/.env
+// Needs ADMIN_TOKEN_SECRET (32+ random characters) in api/email_connect.php
 //   php -r "echo bin2hex(random_bytes(32));"
 require_once __DIR__ . '/config.php';   // gives us db(), env(), respond() and the CORS headers
 
 // ---------- token helpers ----------
 function admin_secret(): string {
     $s = env('ADMIN_TOKEN_SECRET');
-    if (strlen($s) < 32) respond(['error' => 'ADMIN_TOKEN_SECRET is missing or too short in backend/.env'], 500);
+    if (strlen($s) < 32) respond(['error' => 'ADMIN_TOKEN_SECRET is missing or too short in email_connect.php'], 500);
     return $s;
 }
 function b64u_enc(string $d): string { return rtrim(strtr(base64_encode($d), '+/', '-_'), '='); }
@@ -33,14 +33,7 @@ function verify_token(string $token): ?array {
 function current_admin(): ?array {
     $t = trim($_SERVER['HTTP_X_UPLOAD_TOKEN'] ?? '');
     if ($t === '') return null;
-    $admin = verify_token($t);
-    if ($admin !== null) return $admin;
-
-    // Fallback: accept legacy static UPLOAD_TOKEN if configured
-    if (defined('UPLOAD_TOKEN') && UPLOAD_TOKEN !== '' && hash_equals(UPLOAD_TOKEN, $t)) {
-        return ['id' => 0, 'u' => 'admin_legacy', 'exp' => time() + 3600];
-    }
-    return null;
+    return verify_token($t);
 }
 
 function require_admin(): array {

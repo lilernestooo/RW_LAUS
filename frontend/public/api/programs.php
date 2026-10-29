@@ -94,7 +94,7 @@ if ($method === 'GET') {
             'SELECT id, kind, category, title, host, schedule, description, image, audio
                FROM programs_tbl ORDER BY sort_order, id'
         )->fetchAll();
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         respond(['error' => 'The programs_tbl table is missing or out of date. Run the programs SQL in phpMyAdmin.'], 500);
     }
@@ -146,7 +146,7 @@ if ($root === false) respond(['error' => 'uploads folder is missing'], 500);
 $action = $_POST['action'] ?? '';
 
 /** The 'card' row of a category (holds the card title and background). */
-function find_category(PDO $pdo): array {
+function find_category(DbConnection $pdo): array {
     $stmt = $pdo->prepare("SELECT id, category, image FROM programs_tbl WHERE kind = 'card' AND category = ?");
     $stmt->execute([(string)($_POST['category'] ?? '')]);
     $row = $stmt->fetch();
@@ -155,7 +155,7 @@ function find_category(PDO $pdo): array {
 }
 
 /** A 'program' row. Card rows can never be matched here. */
-function find_program(PDO $pdo): array {
+function find_program(DbConnection $pdo): array {
     $stmt = $pdo->prepare("SELECT id, category, image, audio FROM programs_tbl WHERE kind = 'program' AND id = ?");
     $stmt->execute([(int)($_POST['id'] ?? 0)]);
     $row = $stmt->fetch();
@@ -207,7 +207,7 @@ if ($action === 'add_program') {
             $cat['category'], $title, text_field('host', 160), text_field('schedule', 255),
             text_field('description', 2000), $img, $aud, $order,
         ]);
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         remove_file($root, $img);
         remove_file($root, $aud);
@@ -245,7 +245,7 @@ if ($action === 'update_program') {
             $title, text_field('host', 160), text_field('schedule', 255),
             text_field('description', 2000), $newImage, $newAudio, $row['id'],
         ]);
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log($e->getMessage());
         remove_file($root, $img);
         remove_file($root, $aud);

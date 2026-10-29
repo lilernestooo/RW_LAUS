@@ -44,7 +44,7 @@ if (!is_array($in)) respond(['error' => 'Invalid JSON request'], 400);
 $action = $in['action'] ?? 'admin_list';
 
 // Helper to get active recipient
-function get_active_recipient(PDO $pdo): string {
+function get_active_recipient(DbConnection $pdo): string {
     try {
         $stmt = $pdo->prepare("SELECT setting_value FROM settings_tbl WHERE setting_key = 'contact_recipient' LIMIT 1");
         $stmt->execute();
@@ -57,7 +57,7 @@ function get_active_recipient(PDO $pdo): string {
 }
 
 // Helper to get active settings
-function get_all_contact_settings(PDO $pdo): array {
+function get_all_contact_settings(DbConnection $pdo): array {
     return [
         'recipient'      => get_active_recipient($pdo),
         'env_recipient'  => env('CONTACT_TO', 'dwrw951fm@yahoo.com'),
@@ -90,7 +90,7 @@ if ($action === 'admin_list') {
             SUM(CASE WHEN emailed = 0 THEN 1 ELSE 0 END) AS not_emailed
          FROM contacts_tbl"
     );
-    $counts = $countsStmt->fetch(PDO::FETCH_ASSOC) ?: ['all' => 0, 'emailed' => 0, 'not_emailed' => 0];
+    $counts = $countsStmt->fetch() ?: ['all' => 0, 'emailed' => 0, 'not_emailed' => 0];
 
     // Fetch messages
     $stmt = $pdo->prepare(
@@ -100,7 +100,7 @@ if ($action === 'admin_list') {
           ORDER BY created_at DESC"
     );
     $stmt->execute($params);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rows = $stmt->fetchAll();
 
     respond([
         'data'     => $rows,
