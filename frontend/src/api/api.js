@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL ?? "http://rw951.fm/RW_LAUS/frontend/public/api";
+const API = import.meta.env.VITE_API_URL ?? "/api";
 
 // Public reads (the website and the admin tables both use this)
 export async function get(endpoint, params = {}) {
