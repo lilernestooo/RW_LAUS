@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AdminTable, CaptionModal, Field, ImagePicker, RowActions, report, useLatest, useToast } from "./UI";
+import { AdminTable, CaptionModal, Field, ImagePicker, RowActions, report, useConfirm, useLatest, useToast } from "./UI";
 import { get, postForm, uploadBatches } from "../api/api";
 
 const COLUMNS = [
@@ -12,6 +12,7 @@ const OPTIONS = { ordering: false, pageLength: 10 };
 
 export default function GalleryAdmin() {
   const notify = useToast();
+  const confirm = useConfirm();
   const [photos, setPhotos] = useState([]);
   const [caption, setCaption] = useState("");
   const [files, setFiles] = useState([]);
@@ -85,7 +86,13 @@ export default function GalleryAdmin() {
           3: (_, row) => (
             <RowActions editLabel="Edit caption" onEdit={() => setEditId(row.id)}
               onUp={() => move(row.id, -1)} onDown={() => move(row.id, 1)}
-              onDelete={() => window.confirm("Delete this photo?") && act({ action: "delete", id: row.id }, "Deleted.")} />
+              onDelete={async () => {
+                const ok = await confirm({
+                  title: "Delete this photo?",
+                  message: "The photo will be permanently removed from the Gallery page.",
+                });
+                if (ok) await act({ action: "delete", id: row.id }, "Deleted.");
+              }} />
           ),
         }} />
       </section>

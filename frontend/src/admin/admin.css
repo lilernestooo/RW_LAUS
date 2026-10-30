@@ -670,8 +670,25 @@
 }
 
 .adm-login-card {
-  width: 100%;
-  max-width: 360px;
+  width: min(420px, 92vw);
+  max-width: 100%;
+  padding-top: 0;
+  overflow: hidden;
+}
+
+/* banner touches the card's top, left and right edges */
+.adm-login-banner {
+  display: block;
+  width: calc(100% + 2.4rem);
+  max-width: none;
+  height: auto;
+  margin: 0 -1.2rem 1.2rem;
+  user-select: none;
+}
+
+.adm-login-card h1,
+.adm-login-card .adm-hint {
+  text-align: center;
 }
 
 .adm-login-card .adm-btn {
@@ -967,4 +984,31 @@
   .adm-shell.side-open .adm-spinner-wrap {
     left: 4.5rem;
   }
+}
+
+/* Confirm pop-up */
+.adm-confirm-backdrop {
+  place-items: center;
+  z-index: 3000;
+}
+
+.adm-confirm {
+  max-width: 400px;
+  text-align: center;
+}
+
+.adm-confirm-title {
+  margin: 0 0 .5rem;
+  color: var(--text-strong);
+  font-size: 1.1rem;
+}
+
+.adm-confirm-msg {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.adm-confirm-actions {
+  justify-content: center;
 }

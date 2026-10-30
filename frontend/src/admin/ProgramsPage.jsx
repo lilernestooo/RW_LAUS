@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { AdminTable, Field, Modal, ORDERED, RowActions, SingleMedia, useLatest, useToast } from "./UI";
+import { AdminTable, Field, Modal, ORDERED, RowActions, SingleMedia, useConfirm, useLatest, useToast } from "./UI";
 import { get, postForm } from "../api/api";
 
 const COLUMNS = [
@@ -106,6 +106,7 @@ function ProgramForm({ categories, initial, onSubmit }) {
 
 export default function ProgramsAdmin() {
   const notify = useToast();
+  const confirm = useConfirm();
   const { group } = useParams(); // CHANGE 3: "regular" or "news", from the URL
   const [cats, setCats] = useState([]);
   const [modal, setModal] = useState(null); // "add" | program id
@@ -142,7 +143,13 @@ export default function ProgramsAdmin() {
     [ids[i], ids[j]] = [ids[j], ids[i]];
     act({ action: "reorder", ids: ids.join(",") }, "Order saved.");
   };
-  const del = (p) => window.confirm(`Delete ${p.title}?`) && act({ action: "delete_program", id: p.id }, "Deleted.");
+  const del = async (p) => {
+    const ok = await confirm({
+      title: "Delete this program?",
+      message: `"${p.title}" and its image and audio will be permanently deleted.`,
+    });
+    if (ok) await act({ action: "delete_program", id: p.id }, "Deleted.");
+  };
 
   // CHANGE 4: this page only shows ONE category
   const pattern = PAGES[group];

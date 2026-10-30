@@ -104,7 +104,8 @@ function Login() {
         </button>
       </div>
       <form className="adm-card adm-login-card" onSubmit={submit}>
-        <h1>RW 95.1 admin</h1>
+        <img className="adm-login-banner" src={logo} alt="RW 95.1 FM" draggable="false" />
+        <h1>Admin Panel</h1>
         <p className="adm-hint">Sign in to update site content.</p>
         <label className="adm-field">
           <span>Username</span>

@@ -1,7 +1,7 @@
 // Admin: monitor, approve, mark as spam or delete visitor comments.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { adminListComments, adminSetCommentStatus, adminDeleteComment } from "../api/api";
-import { AdminTable, ORDERED, useLatest } from "./UI";
+import { AdminTable, ORDERED, useConfirm, useLatest } from "./UI";
 
 const TABS = ["pending", "approved", "spam", "all"];
 
@@ -30,6 +30,7 @@ async function fetchAll(status) {
 }
 
 export default function CommentsAdmin() {
+  const confirm = useConfirm();
   const [status, setStatus] = useState("pending");
   const [rows, setRows] = useState([]);
   const [counts, setCounts] = useState({});
@@ -65,8 +66,12 @@ export default function CommentsAdmin() {
   // Table buttons read the newest handler so they never act on stale data
   const actRef = useLatest(act);
   const setRowStatus = (id, s) => actRef.current(() => adminSetCommentStatus(id, s));
-  const remove = (id) => {
-    if (!window.confirm("Delete this comment permanently?")) return;
+  const remove = async (id) => {
+    const ok = await confirm({
+      title: "Delete this comment?",
+      message: "The comment will be permanently deleted. This cannot be undone.",
+    });
+    if (!ok) return;
     actRef.current(() => adminDeleteComment(id));
   };
 

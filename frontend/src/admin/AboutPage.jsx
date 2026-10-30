@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AdminTable, Field, Modal, ORDERED, RowActions, SingleMedia, useLatest, useToast } from "./UI";
+import { AdminTable, Field, Modal, ORDERED, RowActions, SingleMedia, useConfirm, useLatest, useToast } from "./UI";
 import { get, postForm } from "../api/api";
 
 const PEOPLE_COLS = [
@@ -80,6 +80,7 @@ function PersonForm({ initial, submitLabel, onSubmit }) {
 
 export default function AboutAdmin() {
   const notify = useToast();
+  const confirm = useConfirm();
   const [data, setData] = useState({ banner: null, people: [], milestones: [], programs: [] });
   const [bannerAlt, setBannerAlt] = useState("");
   const [modal, setModal] = useState(null); // "add" | person id
@@ -118,7 +119,13 @@ export default function AboutAdmin() {
     [ids[i], ids[j]] = [ids[j], ids[i]];
     act({ action: "reorder_people", kind, ids: ids.join(",") }, "Order saved.");
   };
-  const deletePerson = (p) => window.confirm(`Delete ${p.name}?`) && act({ action: "delete_person", id: p.id }, "Deleted.");
+  const deletePerson = async (p) => {
+    const ok = await confirm({
+      title: "Delete this person?",
+      message: `"${p.name}" and their photo will be permanently deleted.`,
+    });
+    if (ok) await act({ action: "delete_person", id: p.id }, "Deleted.");
+  };
   const peopleProps = { onMove: movePerson, onEdit: setModal, onDelete: deletePerson };
 
   return (
@@ -165,7 +172,13 @@ export default function AboutAdmin() {
           }}>Add milestone</button>
         </div>
         <AdminTable data={data.milestones} columns={MILESTONE_COLS} options={MILESTONE_OPTS} slots={{
-          3: (_, m) => <RowActions onDelete={() => window.confirm("Delete this milestone?") && act({ action: "delete_milestone", id: m.id }, "Deleted.")} />,
+          3: (_, m) => <RowActions onDelete={async () => {
+            const ok = await confirm({
+              title: "Delete this milestone?",
+              message: `"${m.title}" will be permanently removed from Our Journey.`,
+            });
+            if (ok) await act({ action: "delete_milestone", id: m.id }, "Deleted.");
+          }} />,
         }} />
       </section>
 
@@ -182,7 +195,13 @@ export default function AboutAdmin() {
           }}>Add</button>
         </div>
         <AdminTable data={data.programs} columns={PROGRAM_COLS} slots={{
-          2: (_, g) => <RowActions onDelete={() => window.confirm("Delete this program?") && act({ action: "delete_program", id: g.id }, "Deleted.")} />,
+          2: (_, g) => <RowActions onDelete={async () => {
+            const ok = await confirm({
+              title: "Delete this program?",
+              message: `"${g.name}" will be permanently removed from the About page.`,
+            });
+            if (ok) await act({ action: "delete_program", id: g.id }, "Deleted.");
+          }} />,
         }} />
       </section>
 

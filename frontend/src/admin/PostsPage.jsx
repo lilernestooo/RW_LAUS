@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AdminTable, Field, ImagePicker, Modal, MONTH, RowActions, report, toDate, toMonth, useToast } from "./UI";
+import { AdminTable, Field, ImagePicker, Modal, MONTH, RowActions, report, toDate, toMonth, useConfirm, useToast } from "./UI";
 import {
   adminCreatePost,
   adminDeletePost,
@@ -22,6 +22,7 @@ const OPTIONS = { order: [[2, "desc"]] };
 
 export default function PostsAdmin() {
   const notify = useToast();
+  const confirm = useConfirm();
   const [posts, setPosts] = useState([]);
   const [slug, setSlug] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -35,7 +36,11 @@ export default function PostsAdmin() {
   const selected = posts.find((p) => p.slug === slug);
 
   const removePost = async (row) => {
-    if (!window.confirm(`Delete "${row.title}"?\n\nIts photos and comments are deleted too. This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete this post?",
+      message: `"${row.title}"\n\nIts photos and comments are deleted too. This cannot be undone.`,
+    });
+    if (!ok) return;
     try {
       await adminDeletePost(row.id);
       notify("Post deleted.");
@@ -210,6 +215,7 @@ function NewPost({ onCreated, onClose }) {
 
 function PostManager({ post, onChanged }) {
   const notify = useToast();
+  const confirm = useConfirm();
   const [month, setMonth] = useState(toMonth(post.date));
   const [busy, setBusy] = useState("");
   const [gallery, setGallery] = useState(null);
@@ -258,7 +264,11 @@ function PostManager({ post, onChanged }) {
   });
 
   const removeImage = async (id) => {
-    if (!window.confirm("Delete this photo?")) return;
+    const ok = await confirm({
+      title: "Delete this photo?",
+      message: "The photo will be permanently removed from this post's gallery.",
+    });
+    if (!ok) return;
     try {
       await postForm("upload.php", { action: "delete", id });
       notify("Deleted.");

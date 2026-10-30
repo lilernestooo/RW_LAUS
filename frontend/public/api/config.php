@@ -55,11 +55,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     exit;
 }
 
+// TEMPORARY DEBUG: remove the 'debug' lines after the test
 set_exception_handler(function (Throwable $e) {
     error_log($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-    respond(['error' => 'An unexpected server error occurred.'], 500);
+    respond([
+        'error' => 'An unexpected server error occurred.',
+        'debug' => $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine(),
+    ], 500);
 });
 
+// TEMPORARY DEBUG: remove the 'debug' lines after the test
 register_shutdown_function(function () {
     $e = error_get_last();
     if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
@@ -67,7 +72,10 @@ register_shutdown_function(function () {
         if (ob_get_length()) ob_clean();
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['error' => 'An unexpected server error occurred.']);
+        echo json_encode([
+            'error' => 'An unexpected server error occurred.',
+            'debug' => $e['message'] . ' in ' . basename($e['file']) . ':' . $e['line'],
+        ]);
     }
 });
 

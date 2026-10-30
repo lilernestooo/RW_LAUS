@@ -6,7 +6,7 @@ import {
   adminToggleContactEmailed,
   adminDeleteContact,
 } from "../api/api";
-import { AdminTable, Modal, Field, useToast, useLatest } from "./UI";
+import { AdminTable, Modal, Field, useConfirm, useToast, useLatest } from "./UI";
 
 const COLUMNS = [
   { title: "Sender", data: "name" },
@@ -35,6 +35,7 @@ export default function ContactsAdmin() {
   const [savingRecip, setSavingRecip] = useState(false);
 
   const notify = useToast();
+  const confirm = useConfirm();
   const busy = useRef(false);
 
   const load = useCallback(async () => {
@@ -87,8 +88,12 @@ export default function ContactsAdmin() {
     }
   };
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Delete this contact message permanently?")) return;
+  const handleDelete = async (id) => {
+    const ok = await confirm({
+      title: "Delete this message?",
+      message: "The contact message will be permanently deleted. This cannot be undone.",
+    });
+    if (!ok) return;
     actRef.current(() => adminDeleteContact(id), "Message deleted");
     if (viewing?.rec_id === id) setViewing(null);
   };

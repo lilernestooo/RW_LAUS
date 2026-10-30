@@ -28,6 +28,6 @@ return [
     'SITE_URL'   => 'https://rw951.fm',
 
     // Local XAMPP only. Leave these two out on the server.
-    // 'SMTP_VERIFY_SSL' => 'false',
-    // 'SMTP_FORCE_IPV4' => 'true',
+    //'SMTP_VERIFY_SSL' => 'false',
+    //'SMTP_FORCE_IPV4' => 'true',
 ];

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AdminTable, CaptionModal, Field, ImagePicker, ORDERED, RowActions, SingleMedia, report, useToast } from "./UI";
+import { AdminTable, CaptionModal, Field, ImagePicker, ORDERED, RowActions, SingleMedia, report, useConfirm, useToast } from "./UI";
 import { get, postForm, uploadBatches } from "../api/api";
 
 const AWARD_COLS = [
@@ -10,6 +10,7 @@ const AWARD_COLS = [
 
 export default function HomeAdmin() {
   const notify = useToast();
+  const confirm = useConfirm();
   const [items, setItems] = useState([]);
   const [caption, setCaption] = useState("");
   const [files, setFiles] = useState([]);
@@ -80,7 +81,13 @@ export default function HomeAdmin() {
           0: (url) => <img className="adm-thumb" src={url} alt="" loading="lazy" />,
           2: (_, row) => (
             <RowActions editLabel="Edit caption" onEdit={() => setEditId(row.id)}
-              onDelete={() => window.confirm("Delete this photo?") && act({ action: "delete", id: row.id }, "Deleted.")} />
+              onDelete={async () => {
+                const ok = await confirm({
+                  title: "Delete this award photo?",
+                  message: "The photo will be permanently removed from the Awards slider.",
+                });
+                if (ok) await act({ action: "delete", id: row.id }, "Deleted.");
+              }} />
           ),
         }} />
       </section>

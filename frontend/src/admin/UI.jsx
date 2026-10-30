@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-// Shared building blocks for every admin page: helpers, toasts, DataTables wrapper, modal, form bits.
+// Shared building blocks for every admin page: helpers, toasts, confirm pop-up, DataTables wrapper, modal, form bits.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
@@ -34,6 +34,78 @@ export function usePreviews(files) {
   return urls;
 }
 
+// ---------- Confirm pop-up ----------
+// const confirm = useConfirm();
+// if (!(await confirm({ title: "Delete this post?", message: "..." }))) return;
+// Also accepts a plain string: await confirm("Delete this?")
+const ConfirmCtx = createContext(() => Promise.resolve(window.confirm("Are you sure?")));
+export const useConfirm = () => useContext(ConfirmCtx);
+
+function ConfirmProvider({ children }) {
+  const [state, setState] = useState(null);
+  const resolver = useRef(null);
+  const cancelRef = useRef(null);
+
+  const confirm = useCallback(
+    (opts = {}) =>
+      new Promise((resolve) => {
+        resolver.current?.(false);
+        resolver.current = resolve;
+        const o = typeof opts === "string" ? { message: opts } : opts;
+        setState({
+          title: "Delete this item?",
+          message: "This cannot be undone.",
+          confirmText: "Delete",
+          cancelText: "Cancel",
+          ...o,
+        });
+      }),
+    []
+  );
+
+  const close = useCallback((result) => {
+    resolver.current?.(result);
+    resolver.current = null;
+    setState(null);
+  }, []);
+
+  useEffect(() => {
+    if (!state) return;
+    cancelRef.current?.focus(); // Cancel is focused first, so an accidental Enter does not delete
+    const onKey = (e) => {
+      if (e.key === "Escape") { e.stopPropagation(); close(false); }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [state, close]);
+
+  return (
+    <ConfirmCtx.Provider value={confirm}>
+      {children}
+      {state && (
+        <div className="adm adm-backdrop adm-confirm-backdrop"
+          onMouseDown={(e) => e.target === e.currentTarget && close(false)}>
+          <div className="adm-modal adm-confirm" role="alertdialog" aria-modal="true"
+            aria-labelledby="adm-confirm-title">
+            <div className="adm-modal-body">
+              <h3 id="adm-confirm-title" className="adm-confirm-title">{state.title}</h3>
+              <p className="adm-confirm-msg">{state.message}</p>
+              <div className="adm-actions adm-confirm-actions">
+                <button type="button" ref={cancelRef} className="adm-btn plain" onClick={() => close(false)}>
+                  {state.cancelText}
+                </button>
+                <button type="button" className="adm-btn" onClick={() => close(true)}>
+                  {state.confirmText}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </ConfirmCtx.Provider>
+  );
+}
+
 // ---------- Toast ----------
 const ToastCtx = createContext(() => {});
 export const useToast = () => useContext(ToastCtx);
@@ -47,7 +119,7 @@ export function ToastProvider({ children }) {
   }, []);
   return (
     <ToastCtx.Provider value={notify}>
-      {children}
+      <ConfirmProvider>{children}</ConfirmProvider>
       <div className="adm adm-toasts" aria-live="polite">
         {items.map((t) => (
           <div key={t.id} className={`adm-toast ${t.type}`}>{t.message}</div>
@@ -151,6 +223,7 @@ export function ImagePicker({ files, onChange, inputRef, multiple = true }) {
 // onUpload(file) and onRemove() should throw on failure.
 export function SingleMedia({ title, hint, url, kind = "image", accept = "image/*", onUpload, onRemove, children }) {
   const notify = useToast();
+  const confirm = useConfirm();
   const ref = useRef(null);
   const [busy, setBusy] = useState(false);
 
@@ -169,7 +242,12 @@ export function SingleMedia({ title, hint, url, kind = "image", accept = "image/
   };
 
   const remove = async () => {
-    if (!window.confirm(`Remove this ${kind}?`)) return;
+    const ok = await confirm({
+      title: `Remove this ${kind}?`,
+      message: `The current ${kind} will be permanently deleted.`,
+      confirmText: "Remove",
+    });
+    if (!ok) return;
     try { await onRemove(); } catch (e) { notify(e.message, "err"); }
   };
 

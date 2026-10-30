@@ -2,11 +2,13 @@
 /**
  * POST contact.php   (JSON)  { name, email, message, website }
  *   -> saves the message in contacts_tbl, then emails it to CONTACT_TO via SMTP (PHPMailer)
+ *   -> then sends the visitor a short "we received your message" confirmation
  *   <- { data: { saved: true, emailed: true|false } }
  *
  * api/email_connect.php keys:
  *   SMTP_HOST, SMTP_PORT, SMTP_SECURE (tls|ssl), SMTP_USER, SMTP_PASS
- *   CONTACT_TO, CONTACT_FROM
+ *   CONTACT_TO, CONTACT_FROM, CONTACT_FROM_NAME, CONTACT_SUBJECT_PREFIX
+ *   CONTACT_CONFIRM=true|false   (visitor confirmation copy, default true)
  *   BANNER_URL=https://yourdomain.com/assets/cropped-NewBanner.jpg   (public https link, no Gmail hover icons)
  *   SMTP_VERIFY_SSL=false   (local XAMPP only)
  * If SMTP_HOST is empty, it falls back to PHP's mail().
@@ -80,16 +82,23 @@ $safeName = preg_replace('/[\r\n]+/', ' ', $name);
 
 $subjectPrefix = env('CONTACT_SUBJECT_PREFIX', 'DWRW Contact Form');
 $customSubject = env('CONTACT_SUBJECT', '');
-$subject       = $customSubject !== '' ? $customSubject : ($subjectPrefix . ' - ' . $safeName);
+$subject       = $customSubject !== '' ? $customSubject : ($subjectPrefix . ' - ' . $safeName . ' (' . $email . ')');
 
 $sentAt    = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('F j, Y \a\t g:i A');
 $replyHref = 'mailto:' . $email . '?subject=' . rawurlencode('Re: Your message to RW 95.1 FM');
 $msgHtml   = nl2br($h($message));
 
+$siteTitle = env('SITE_TITLE', 'RW 95.1 FM');
+$siteUrl   = env('SITE_URL', 'https://rw951.fm');
+
 /* ---------- Banner ----------
-   1) BANNER_URL (public https link)  -> normal image, NO download/save icons in Gmail
-   2) otherwise the local file is embedded (cid) -> Gmail shows hover icons on attachments */
-$bannerUrl  = trim(env('BANNER_URL', ''));
+   1) On localhost the public BANNER_URL does not exist yet, so the local file is embedded (cid)
+   2) On the live site BANNER_URL (public https link) is used -> normal image, NO download/save icons in Gmail
+   3) If BANNER_URL is empty, the local file is embedded (cid) */
+$serverName = strtolower((string) ($_SERVER['SERVER_NAME'] ?? ''));
+$isLocal    = in_array($serverName, ['localhost', '127.0.0.1', '::1'], true);
+
+$bannerUrl  = $isLocal ? '' : trim(env('BANNER_URL', ''));
 $bannerPath = '';
 $bannerSrc  = '';
 
@@ -121,14 +130,18 @@ $preheader = $h(mb_strimwidth(preg_replace('/\s+/', ' ', $message), 0, 110, '…
 $font  = "font-family:'Segoe UI',Arial,Helvetica,sans-serif;";
 $label = $font . 'font-size:11px;font-weight:bold;letter-spacing:1px;color:#8a8a8a;';
 
-$body = '<!DOCTYPE html>'
+// Visitor avatar: Gravatar photo if they have one, otherwise a letter avatar with their initials
+$avatarUrl = 'https://www.gravatar.com/avatar/' . md5(strtolower($email)) . '?s=96&d=initials&name=' . rawurlencode($safeName);
+
+// Shared <head> and styles for both emails
+$emailHead = '<!DOCTYPE html>'
   . '<html lang="en" xmlns="http://www.w3.org/1999/xhtml"><head>'
   . '<meta charset="UTF-8">'
   . '<meta name="viewport" content="width=device-width,initial-scale=1">'
   . '<meta http-equiv="X-UA-Compatible" content="IE=edge">'
   . '<meta name="color-scheme" content="light dark">'
   . '<meta name="supported-color-schemes" content="light dark">'
-  . '<title>' . $h($subject) . '</title>'
+  . '<title>%TITLE%</title>'
   . '<style>'
   . ':root{color-scheme:light dark;supported-color-schemes:light dark;}'
   . 'body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}'
@@ -158,7 +171,9 @@ $body = '<!DOCTYPE html>'
   . '[data-ogsb] .bg-card{background:#1e1e1e !important;}'
   . '[data-ogsb] .bg-soft{background:#262626 !important;}'
   . '[data-ogsb] .bg-foot{background:#181818 !important;}'
-  . '</style></head>'
+  . '</style></head>';
+
+$body = str_replace('%TITLE%', $h($subject), $emailHead)
   . '<body class="bg-page" style="margin:0;padding:0;background:#f3f4f6;">'
 
   // hidden preview text
@@ -185,7 +200,10 @@ $body = '<!DOCTYPE html>'
   . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
   . '<tr><td class="line" style="padding:14px 0;border-top:1px solid #e5e7eb;">'
   .   '<div class="t-muted" style="' . $label . '">NAME</div>'
-  .   '<div class="t-main" style="' . $font . 'font-size:16px;color:#1f2933;margin-top:4px;">' . $h($name) . '</div>'
+  .   '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;"><tr>'
+  .   '<td style="padding-right:12px;"><img src="' . $h($avatarUrl) . '" width="48" height="48" alt="" style="display:block;border-radius:50%;border:0;"></td>'
+  .   '<td class="t-main" style="' . $font . 'font-size:16px;color:#1f2933;">' . $h($name) . '</td>'
+  .   '</tr></table>'
   . '</td></tr>'
   . '<tr><td class="line" style="padding:14px 0;border-top:1px solid #e5e7eb;">'
   .   '<div class="t-muted" style="' . $label . '">E-MAIL</div>'
@@ -223,16 +241,13 @@ $body = '<!DOCTYPE html>'
   . '</div>'
   . '<div class="t-muted" style="' . $font . 'font-size:12px;line-height:1.7;color:#8a8a8a;margin-top:10px;">'
   . '<strong>RW 95.1 FM</strong> &middot; Jose Abad Santos Avenue, City of San Fernando, Pampanga<br>'
-  . '<span style="font-size:11px;color:#9ca3af;margin-top:6px;display:inline-block;">This e-mail was sent from a contact form on ' . $h(env('SITE_TITLE', 'RW 95.1 FM')) . ' (' . $h(env('SITE_URL', 'https://rw951.fm')) . ')</span>'
+  . '<span style="font-size:11px;color:#9ca3af;margin-top:6px;display:inline-block;">This e-mail was sent from a contact form on ' . $h($siteTitle) . ' (' . $h($siteUrl) . ')</span>'
   . '</div>'
   . '</td></tr>'
 
   . '</table>'
   . '</td></tr></table>'
   . '</body></html>';
-
-$siteTitle = env('SITE_TITLE', 'RW 95.1 FM');
-$siteUrl   = env('SITE_URL', 'https://rw951.fm');
 
 $altBody = "NEW CONTACT MESSAGE - $siteTitle\n"
          . "----------------------------------------------\n"
@@ -245,9 +260,9 @@ $altBody = "NEW CONTACT MESSAGE - $siteTitle\n"
          . "--\n"
          . "This e-mail was sent from a contact form on $siteTitle ($siteUrl)";
 
-$sent = false;
-$mail = new PHPMailer(true);
-try {
+/** Builds a PHPMailer already set up with the SMTP settings (or mail() fallback). */
+$makeMailer = function () use ($smtpUser, $from, $bannerPath): PHPMailer {
+    $mail     = new PHPMailer(true);
     $smtpHost = env('SMTP_HOST', '');
 
     if ($smtpHost !== '') {
@@ -292,14 +307,22 @@ try {
     }
 
     $mail->CharSet = 'UTF-8';
-    $mail->setFrom($from, $fromName);
-    $mail->addAddress($to);
-    $mail->addReplyTo($email, $safeName);
 
     // Only embed the picture when no public BANNER_URL is used
     if ($bannerPath !== '') {
         $mail->addEmbeddedImage($bannerPath, 'rwbanner', '', 'base64', 'image/jpeg', 'inline');
     }
+    return $mail;
+};
+
+// ---------- Email to the station ----------
+$sent = false;
+$mail = null;
+try {
+    $mail = $makeMailer();
+    $mail->setFrom($from, $safeName . ' via ' . $fromName);
+    $mail->addAddress($to);
+    $mail->addReplyTo($email, $safeName);
 
     $mail->isHTML(true);
     $mail->Subject = $subject;
@@ -318,7 +341,7 @@ try {
         }
     }
 } catch (MailException $e) {
-    error_log("contact.php: mail failed for rec_id $recId: " . $mail->ErrorInfo);
+    error_log("contact.php: mail failed for rec_id $recId: " . ($mail ? $mail->ErrorInfo : $e->getMessage()));
     $sent = false;
 } catch (Throwable $t) {
     error_log("contact.php: unexpected mail error for rec_id $recId: " . $t->getMessage());
@@ -327,6 +350,60 @@ try {
 
 if ($sent) {
     $pdo->prepare('UPDATE contacts_tbl SET emailed = 1 WHERE rec_id = ?')->execute([$recId]);
+}
+
+// ---------- Confirmation copy to the visitor ----------
+// One try only, never changes the response, and skipped when the same address already
+// wrote more than twice in the last hour (stops the form being used to mail someone else).
+if (strtolower(env('CONTACT_CONFIRM', 'true')) !== 'false') {
+    try {
+        $sameAddr = $pdo->prepare('SELECT COUNT(*) FROM contacts_tbl WHERE email = ? AND created_at > (NOW() - INTERVAL 1 HOUR)');
+        $sameAddr->execute([$email]);
+
+        if ((int) $sameAddr->fetchColumn() <= 2) {
+            $confSubject = 'We received your message - ' . $siteTitle;
+
+            $confBody = str_replace('%TITLE%', $h($confSubject), $emailHead)
+              . '<body class="bg-page" style="margin:0;padding:0;background:#f3f4f6;">'
+              . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-page" style="background:#f3f4f6;"><tr>'
+              . '<td align="center" style="padding:28px 12px;">'
+              . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-card" '
+              . 'style="max-width:640px;background:#ffffff;border-radius:8px;overflow:hidden;border-bottom:4px solid #e60000;">'
+              . $headerHtml
+              . '<tr><td class="px" style="padding:30px 36px 8px;">'
+              . '<div class="t-main" style="' . $font . 'font-size:22px;font-weight:bold;color:#1f2933;line-height:1.3;">Thank you, ' . $h($safeName) . '!</div>'
+              . '<div class="t-main" style="' . $font . 'font-size:15px;color:#1f2933;margin-top:12px;line-height:1.7;">'
+              . 'We received your message through the Contact Us page of ' . $h($siteTitle) . ' on ' . $h($sentAt) . ' (Philippine time). '
+              . 'Our team will get back to you at this e-mail address.</div>'
+              . '<div class="t-muted" style="' . $font . 'font-size:12px;color:#8a8a8a;margin-top:18px;line-height:1.7;">'
+              . 'If you did not send this message, you can ignore this e-mail.</div>'
+              . '</td></tr>'
+              . '<tr><td class="px bg-foot" bgcolor="#fafafa" style="background:#fafafa;border-top:1px solid #eeeeee;padding:18px 36px;">'
+              . '<div class="t-muted" style="' . $font . 'font-size:12px;line-height:1.7;color:#8a8a8a;">'
+              . '<strong>RW 95.1 FM</strong> &middot; Jose Abad Santos Avenue, City of San Fernando, Pampanga<br>'
+              . $h($siteUrl) . '</div>'
+              . '</td></tr>'
+              . '</table></td></tr></table></body></html>';
+
+            $confAlt = "Thank you, $safeName!\n\n"
+                     . "We received your message through the Contact Us page of $siteTitle on $sentAt (Philippine time).\n"
+                     . "Our team will get back to you at this e-mail address.\n\n"
+                     . "If you did not send this message, you can ignore this e-mail.\n\n"
+                     . "--\n$siteTitle ($siteUrl)";
+
+            $conf = $makeMailer();
+            $conf->setFrom($from, $fromName);
+            $conf->addAddress($email, $safeName);
+            $conf->addReplyTo($to);
+            $conf->isHTML(true);
+            $conf->Subject = $confSubject;
+            $conf->Body    = $confBody;
+            $conf->AltBody = $confAlt;
+            $conf->send();
+        }
+    } catch (Throwable $t) {
+        error_log("contact.php: confirmation failed for rec_id $recId: " . $t->getMessage());
+    }
 }
 
 respond(['data' => ['saved' => true, 'emailed' => $sent]]);
