@@ -1,6 +1,5 @@
-const API = "https://rw951.fm/api_1/";
+const API = import.meta.env.VITE_API_URL ?? "/api";
 
-// Public reads (the website and the admin tables both use this)
 export async function get(endpoint, params = {}) {
   const qs = new URLSearchParams(
     Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")

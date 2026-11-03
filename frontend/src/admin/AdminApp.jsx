@@ -1,6 +1,6 @@
 // Admin entry: sign-in, sidebar layout and routes. Mounted at /admin/* in App.jsx.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom"; // CHANGE 1: added useLocation
+import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import "./admin.css";
 import { ToastProvider } from "./UI";
 import { auth, clearToken, getToken, setToken } from "../api/api";
@@ -143,12 +143,11 @@ const ICONS = {
   close: "M6 6l12 12 M18 6L6 18",
   external: "M14 4h6v6 M20 4l-9 9 M18 14v6H4V6h6",
   logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
-  chevron: "M6 9l6 6 6-6", // CHANGE 2: arrow for the dropdown
+  chevron: "M6 9l6 6 6-6",
   sun: "M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42",
   moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
 };
 
-// CHANGE 3: "Programs page" is now a group with two child pages
 const NAV = [
   {
     group: "Content", items: [
@@ -173,7 +172,6 @@ const NAV = [
   },
 ];
 
-// CHANGE 4: new component. A sidebar button that opens a dropdown of sub-pages.
 function NavGroup({ item, sideOpen, expandSide, onNavigate }) {
   const { pathname } = useLocation();
   const active = item.children.some((c) => pathname.startsWith(c.to));
@@ -328,7 +326,6 @@ function Gate() {
         <Route path="contacts" element={<ContactsAdmin />} />
         <Route path="home" element={<HomeAdmin />} />
         <Route path="about" element={<AboutAdmin />} />
-        {/* CHANGE 5: two program pages instead of one */}
         <Route path="programs" element={<Navigate to="/admin/programs/regular" replace />} />
         <Route path="programs/:group" element={<ProgramsAdmin />} />
         <Route path="gallery" element={<GalleryAdmin />} />

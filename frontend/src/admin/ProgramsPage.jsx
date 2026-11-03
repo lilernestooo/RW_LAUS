@@ -12,7 +12,6 @@ const COLUMNS = [
   { title: "", data: null, orderable: false, searchable: false, defaultContent: "" },
 ];
 
-// CHANGE 1: which category each URL shows (/admin/programs/regular, /admin/programs/news).
 // It is matched against the category's slug + title from your API.
 const PAGES = { regular: /regular/i, news: /news/i };
 
@@ -63,7 +62,6 @@ function ProgramForm({ categories, initial, onSubmit }) {
 
   return (
     <div className="adm-stack">
-      {/* CHANGE 2: the category picker only shows if there is more than one category to pick */}
       {!isEdit && categories.length > 1 && (
         <label className="adm-field"><span>Category</span>
           <select value={f.category} onChange={set("category")}>
@@ -107,7 +105,7 @@ function ProgramForm({ categories, initial, onSubmit }) {
 export default function ProgramsAdmin() {
   const notify = useToast();
   const confirm = useConfirm();
-  const { group } = useParams(); // CHANGE 3: "regular" or "news", from the URL
+  const { group } = useParams();
   const [cats, setCats] = useState([]);
   const [modal, setModal] = useState(null); // "add" | program id
   const catsRef = useLatest(cats);
@@ -150,8 +148,6 @@ export default function ProgramsAdmin() {
     });
     if (ok) await act({ action: "delete_program", id: p.id }, "Deleted.");
   };
-
-  // CHANGE 4: this page only shows ONE category
   const pattern = PAGES[group];
   const cat = pattern ? cats.find((c) => pattern.test(`${c.slug} ${c.title}`)) : null;
 
@@ -201,7 +197,6 @@ export default function ProgramsAdmin() {
 
       {modal === "add" && (
         <Modal wide title={`Add to ${cat.title}`} onClose={() => setModal(null)}>
-          {/* CHANGE 5: only this page's category is passed in, so new programs go to the right place */}
           <ProgramForm categories={[cat]} onSubmit={(f) => act({ action: "add_program", ...f }, "Added.")} />
         </Modal>
       )}

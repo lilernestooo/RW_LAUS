@@ -55,16 +55,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     exit;
 }
 
-// TEMPORARY DEBUG: remove the 'debug' lines after the test
 set_exception_handler(function (Throwable $e) {
     error_log($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     respond([
         'error' => 'An unexpected server error occurred.',
-        'debug' => $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine(),
     ], 500);
 });
 
-// TEMPORARY DEBUG: remove the 'debug' lines after the test
 register_shutdown_function(function () {
     $e = error_get_last();
     if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
@@ -88,8 +85,18 @@ function respond($payload, int $status = 200): void {
 
 function image_url(?string $filename): ?string {
     if (!$filename) return null;
-    $path = implode('/', array_map('rawurlencode', explode('/', $filename)));
-    return '/uploads/' . $path;
+    if (preg_match('#^https?://#i', $filename)) {
+        return $filename;
+    }
+    $clean = preg_replace('#^uploads/#i', '', ltrim($filename, '/'));
+    $path = implode('/', array_map('rawurlencode', explode('/', $clean)));
+    $serverName = strtolower((string) ($_SERVER['SERVER_NAME'] ?? ''));
+    $isLocal    = in_array($serverName, ['localhost', '127.0.0.1', '::1'], true);
+    if ($isLocal) {
+        return '/uploads/' . $path;
+    }
+    $baseUrl = env('SITE_URL', 'https://rw951.fm');
+    return rtrim($baseUrl, '/') . '/uploads/' . $path;
 }
 
 function categories_for(array $postIds): array {

@@ -54,6 +54,7 @@ if (!in_array($action, ['create', 'delete'], true)) respond(['error' => 'Unknown
 function remove_upload_file(string $filename): void {
     $root = realpath(UPLOAD_DIR);
     if ($root === false || $filename === '') return;
+    if (preg_match('#/uploads/(.*)$#i', $filename, $m)) $filename = $m[1];
     $rel = ltrim(str_replace('\\', '/', $filename), '/');
     if (strpos($rel, '..') !== false) return;
     if (strpos($rel, 'featured/') !== 0 && strpos($rel, 'gallery/') !== 0) return; // never touch other folders

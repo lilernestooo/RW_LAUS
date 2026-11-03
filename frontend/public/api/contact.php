@@ -80,10 +80,7 @@ $fromName = env('CONTACT_FROM_NAME', 'DWRW Contact Form');
 $h = function (string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); };
 $safeName = preg_replace('/[\r\n]+/', ' ', $name);
 
-$subjectPrefix = env('CONTACT_SUBJECT_PREFIX', 'DWRW Contact Form');
-$customSubject = env('CONTACT_SUBJECT', '');
-$subject       = $customSubject !== '' ? $customSubject : ($subjectPrefix . ' - ' . $safeName . ' (' . $email . ')');
-
+$subject = env('CONTACT_SUBJECT', 'DWRW Contact Form');
 $sentAt    = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('F j, Y \a\t g:i A');
 $replyHref = 'mailto:' . $email . '?subject=' . rawurlencode('Re: Your message to RW 95.1 FM');
 $msgHtml   = nl2br($h($message));
@@ -130,8 +127,6 @@ $preheader = $h(mb_strimwidth(preg_replace('/\s+/', ' ', $message), 0, 110, '…
 $font  = "font-family:'Segoe UI',Arial,Helvetica,sans-serif;";
 $label = $font . 'font-size:11px;font-weight:bold;letter-spacing:1px;color:#8a8a8a;';
 
-// Visitor avatar: Gravatar photo if they have one, otherwise a letter avatar with their initials
-$avatarUrl = 'https://www.gravatar.com/avatar/' . md5(strtolower($email)) . '?s=96&d=initials&name=' . rawurlencode($safeName);
 
 // Shared <head> and styles for both emails
 $emailHead = '<!DOCTYPE html>'
@@ -200,10 +195,7 @@ $body = str_replace('%TITLE%', $h($subject), $emailHead)
   . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
   . '<tr><td class="line" style="padding:14px 0;border-top:1px solid #e5e7eb;">'
   .   '<div class="t-muted" style="' . $label . '">NAME</div>'
-  .   '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;"><tr>'
-  .   '<td style="padding-right:12px;"><img src="' . $h($avatarUrl) . '" width="48" height="48" alt="" style="display:block;border-radius:50%;border:0;"></td>'
-  .   '<td class="t-main" style="' . $font . 'font-size:16px;color:#1f2933;">' . $h($name) . '</td>'
-  .   '</tr></table>'
+  .   '<div class="t-main" style="' . $font . 'font-size:16px;color:#1f2933;margin-top:4px;">' . $h($name) . '</div>'
   . '</td></tr>'
   . '<tr><td class="line" style="padding:14px 0;border-top:1px solid #e5e7eb;">'
   .   '<div class="t-muted" style="' . $label . '">E-MAIL</div>'
@@ -320,7 +312,8 @@ $sent = false;
 $mail = null;
 try {
     $mail = $makeMailer();
-    $mail->setFrom($from, $safeName . ' via ' . $fromName);
+    $mail->setFrom($from, $fromName);
+    $mail->Sender = $from;
     $mail->addAddress($to);
     $mail->addReplyTo($email, $safeName);
 
@@ -393,6 +386,7 @@ if (strtolower(env('CONTACT_CONFIRM', 'true')) !== 'false') {
 
             $conf = $makeMailer();
             $conf->setFrom($from, $fromName);
+            $conf->Sender = $from;
             $conf->addAddress($email, $safeName);
             $conf->addReplyTo($to);
             $conf->isHTML(true);
