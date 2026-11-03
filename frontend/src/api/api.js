@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL ?? "/api";
+const API = "https://rw951.fm/api_1";// const API = import.meta.env.VITE_API_URL ?? "/api";
 
 export async function get(endpoint, params = {}) {
   const qs = new URLSearchParams(
